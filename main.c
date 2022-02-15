@@ -3,147 +3,126 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_ROMAN_LENGTH 64
-#define MAX_STRING_LENGTH 120
-
-void printIntegerAsRomanString(int num);
-void printFormattedIntegers(char* format, char* numbers);
-void printIntegerAsBinaryString(int number);
-int* extractNumbersFromStringToIntegerArray(char* str);
-void fillArrayWithTokens(int arr[], char* str);
-int countTokens(char* str);
-bool isFormattingString(char* string);
-void customPrintfFormatting(char* formattingString, int number);
+int** pointerSort(int* arr, unsigned int size, int ascend_flag);
+void copyArr(int src[], int dest[], int size);
+void mergeAscending(int arr1[], int size1, int arr2[], int size2, int tmpArr[]);
+void mergeDescending(int arr1[], int size1, int arr2[], int size2, int tmpArr[]);
+void mergeSort(int arr[], int size, bool isAscending);
 
 int main() {
-  printFormattedIntegers("%b in Binary is %o in Octal", "18 18");
+  int arr[] = {1, 5, 7, 2, 324, 547, 87, 2, 23, 6, 768, 34, 12, 64, 78};
+
+  int** pointerArr = pointerSort(arr, 15, true);
+  free(pointerArr);
 }
 
-void printIntegerAsRomanString(int num) {
-  int del[] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-  char* sym[] = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-  char res[MAX_ROMAN_LENGTH] = "\0";
-  int i = 0;
+void copyArr(int src[], int dest[], int size) {
+  int i;
 
-  while (num) {
-    while (num / del[i]) {
-      strcat(res, sym[i]);
-      num -= del[i];
-    }
-    i++;
-  }
-
-  printf(res);
-}
-
-void printIntegerAsBinaryString(int number) {
-  if (number == 0) {
-    return;
-  }
-
-  printIntegerAsBinaryString(number / 2);
-  printf("%d", number % 2);
-}
-
-void printFormattedIntegers(char* format, char* numbers) {
-  int numbersArrIndex = 0;
-  int* numbersArr;
-  char* formatAsSeparatedStrings;
-
-  numbersArr = extractNumbersFromStringToIntegerArray(numbers);
-
-  char* stringsArr;
-  char copyOfString[MAX_STRING_LENGTH];
-  strcpy(copyOfString, format);
-
-  char* token;
-
-  token = strtok(copyOfString, " ");
-  while (token != NULL) {
-    if (isFormattingString(token)) {
-      customPrintfFormatting(token, numbersArr[numbersArrIndex]);
-      printf(" ");
-      numbersArrIndex++;
-    } else {
-      printf("%s ", token);
-    }
-
-    token = strtok(NULL, " ");
+  for (i = 0; i < size; i++) {
+    dest[i] = src[i];
   }
 
   return;
 }
 
-int* extractNumbersFromStringToIntegerArray(char* str) {
-  int numberOfTokens = 0;
-  int* numbersArr;
-  char copyOfString[MAX_STRING_LENGTH];
+void mergeAscending(int arr1[], int size1, int arr2[], int size2, int tmpArr[]) {
+  int index1, index2, writeIndex;
+  index1 = index2 = writeIndex = 0;
 
-  strcpy(copyOfString, str);
-  numberOfTokens = countTokens(copyOfString);
-  numbersArr = (int*)malloc(numberOfTokens * sizeof(int));
+  while (index1 < size1 && index2 < size2) {
+    if (arr1[index1] <= arr2[index2]) {
+      tmpArr[writeIndex] = arr1[index1];
+      index1++;
+    } else {
+      tmpArr[writeIndex] = arr2[index2];
+      index2++;
+    }
+    writeIndex++;
+  }
 
-  if (numbersArr == NULL) {
+  while (index1 < size1) {
+    tmpArr[writeIndex] = arr1[index1];
+    index1++;
+    writeIndex++;
+  }
+
+  while (index2 < size2) {
+    tmpArr[writeIndex] = arr2[index2];
+    index2++;
+    writeIndex++;
+  }
+}
+
+void mergeDescending(int arr1[], int size1, int arr2[], int size2, int tmpArr[]) {
+  int index1, index2, writeIndex;
+  index1 = index2 = writeIndex = 0;
+
+  while (index1 < size1 && index2 < size2) {
+    if (arr1[index1] >= arr2[index2]) {
+      tmpArr[writeIndex] = arr1[index1];
+      index1++;
+    } else {
+      tmpArr[writeIndex] = arr2[index2];
+      index2++;
+    }
+    writeIndex++;
+  }
+
+  while (index1 < size1) {
+    tmpArr[writeIndex] = arr1[index1];
+    index1++;
+    writeIndex++;
+  }
+
+  while (index2 < size2) {
+    tmpArr[writeIndex] = arr2[index2];
+    index2++;
+    writeIndex++;
+  }
+}
+
+void mergeSort(int arr[], int size, bool isAscending) {
+  int halfSize = size / 2;
+  int* tmpArr;
+
+  if (size <= 1) {
+    return;
+  }
+
+  mergeSort(arr, halfSize, isAscending);
+  mergeSort(arr + halfSize, size - halfSize, isAscending);
+
+  tmpArr = (int*)malloc(size * sizeof(int));
+
+  if (tmpArr == NULL) {
     exit(1);
   }
 
-  strcpy(copyOfString, str);
-  fillArrayWithTokens(numbersArr, copyOfString);
+  if (isAscending) {
+    mergeAscending(arr, halfSize, arr + halfSize, size - halfSize, tmpArr);
+  } else {
+    mergeDescending(arr, halfSize, arr + halfSize, size - halfSize, tmpArr);
+  }
+  copyArr(tmpArr, arr, size);
+  free(tmpArr);
 
-  return numbersArr;
+  return;
 }
 
-int countTokens(char* str) {
-  int count = 0;
-  char* token;
+int** pointerSort(int* arr, unsigned int size, int ascend_flag) {
+  int i;
+  mergeSort(arr, size, (bool)ascend_flag);
 
-  token = strtok(str, " ");
-  while (token != NULL) {
-    count++;
-    token = strtok(NULL, " ");
+  int** pointerArr = (int**)malloc(size * sizeof(int*));
+
+  if (pointerArr == NULL) {
+    exit(1);
   }
 
-  return count;
-}
-
-void fillArrayWithTokens(int arr[], char* str) {
-  char* token;
-  int i = 0;
-
-  token = strtok(str, " ");
-  while (token != NULL) {
-    arr[i] = atoi(token);
-    token = strtok(NULL, " ");
-    i++;
+  for (i = 0; i < size; i++) {
+    pointerArr[i] = &arr[i];
   }
-}
 
-bool isFormattingString(char* string) {
-  return string[0] == '%';
-}
-
-void customPrintfFormatting(char* formattingString, int number) {
-  switch (formattingString[1]) {
-    case 'd':
-      printf("%d", number);
-      break;
-    case 'x':
-      printf("%x", number);
-      break;
-    case 'X':
-      printf("%X", number);
-      break;
-    case 'o':
-      printf("%o", number);
-      break;
-    case 'b':
-      printIntegerAsBinaryString(number);
-      break;
-    case 'r':
-      printIntegerAsRomanString(number);
-      break;
-    default:
-      printf("#UNSUPPORTED_FORMAT# ");
-      break;
-  }
+  return pointerArr;
 }
