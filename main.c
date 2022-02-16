@@ -33,7 +33,7 @@ void printIntegerAsRomanString(int num) {
     i++;
   }
 
-  printf(res);
+  printf("%s", res);
 }
 
 void printIntegerAsBinaryString(int number) {
