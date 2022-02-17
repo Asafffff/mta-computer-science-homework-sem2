@@ -16,7 +16,15 @@ bool isFormattingString(char* string);
 void customPrintfFormatting(char* formattingString, int number);
 
 int main() {
-  printFormattedIntegers("%b in Binary is %o in Octal", "18 18");
+  char format[100];
+
+  char numbers[100];
+
+  gets(format);
+
+  gets(numbers);
+
+  printFormattedIntegers(format, numbers);
 }
 
 void printIntegerAsRomanString(int num) {
@@ -62,13 +70,16 @@ void printFormattedIntegers(char* format, char* numbers) {
   while (token != NULL) {
     if (isFormattingString(token)) {
       customPrintfFormatting(token, numbersArr[numbersArrIndex]);
-      printf(" ");
       numbersArrIndex++;
     } else {
-      printf("%s ", token);
+      printf("%s", token);
     }
 
     token = strtok(NULL, " ");
+
+    if (token != NULL) {
+      printf(" ");
+    }
   }
 
   return;
@@ -112,7 +123,7 @@ void fillArrayWithTokens(int arr[], char* str) {
 
   token = strtok(str, " ");
   while (token != NULL) {
-    arr[i] = atoi(token);
+    sscanf(token, "%d", &arr[i]);
     token = strtok(NULL, " ");
     i++;
   }
