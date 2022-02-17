@@ -6,7 +6,7 @@ int getIntegerLength(int number);
 int main() {
   int maxMultiplier;
 
-  printf("Please insert max multiplier: ");
+  printf("Please enter number:\n");
   scanf("%d", &maxMultiplier);
 
   printMultiplicationBoard(maxMultiplier);
@@ -26,11 +26,13 @@ int getIntegerLength(int number) {
 void printMultiplicationBoard(int maxMultiplier) {
   int i, j;
 
-  int separatorLength = getIntegerLength(maxMultiplier) + 1;
+  int columnSeparatorLength;
 
   for (i = 1; i <= maxMultiplier; i++) {
     for (j = 1; j <= maxMultiplier; j++) {
-      printf("%*d ", separatorLength, i * j);
+      columnSeparatorLength = getIntegerLength(j * maxMultiplier);
+      columnSeparatorLength = j == 1 ? columnSeparatorLength : columnSeparatorLength + 1;
+      printf("%*d", columnSeparatorLength, i * j);
     }
     printf("\n");
   }
