@@ -1,3 +1,4 @@
+#include <stdio.h>
 
 void printMultiplicationBoard();
 int getIntegerLength(int number);
@@ -21,11 +22,13 @@ void printMultiplicationBoard() {
   int i, j;
   int maxMultiplier = 10;
 
-  int separatorLength = getIntegerLength(maxMultiplier) + 1;
+  int columnSeparatorLength;
 
   for (i = 1; i <= maxMultiplier; i++) {
     for (j = 1; j <= maxMultiplier; j++) {
-      printf("%*d ", separatorLength, i * j);
+      columnSeparatorLength = getIntegerLength(j * maxMultiplier);
+      columnSeparatorLength = j == 1 ? columnSeparatorLength : columnSeparatorLength + 1;
+      printf("%*d", columnSeparatorLength, i * j);
     }
     printf("\n");
   }
