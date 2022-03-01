@@ -4,16 +4,42 @@
 #include <string.h>
 
 void pointerSort(int* arr, unsigned int size, int ascend_flag, int*** pointers);
+void printPointers(int** arr, unsigned int size);
 void copyArr(int src[], int dest[], int size);
 void mergeAscending(int arr1[], int size1, int arr2[], int size2, int tmpArr[]);
 void mergeDescending(int arr1[], int size1, int arr2[], int size2, int tmpArr[]);
 void mergeSort(int arr[], int size, bool isAscending);
 
-int main() {
-  int arr[] = {1, 5, 7, 2, 324, 547, 87, 2, 23, 6, 768, 34, 12, 64, 78};
-  int** pointers = NULL;
+#define SIZE 100
 
-  pointerSort(arr, 15, true, &pointers);
+void main()
+
+{
+
+  unsigned int size, i;
+
+  int arr[SIZE];
+
+  int** pointers;
+
+  int ascend_flag;
+
+  printf("Please enter the number of items:\n");
+
+  scanf("%u", &size);
+
+  for (i = 0; i < size; i++)
+
+    scanf("%d", &arr[i]);
+
+  scanf("%d", &ascend_flag);
+
+  pointerSort(arr, size, ascend_flag, &pointers);
+
+  printf("The sorted array:\n"); // Print the sorted array
+
+  printPointers(pointers, size);
+
   free(pointers);
 }
 
@@ -128,4 +154,14 @@ void pointerSort(int* arr, unsigned int size, int ascend_flag, int*** pointers) 
   *pointers = pointerArr;
 
   return;
+}
+
+void printPointers(int** arr, unsigned int size) {
+  int i;
+
+  for (i = 0; i < size; i++) {
+    printf("%d ", *arr[i]);
+  }
+
+  printf("\n");
 }
