@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_STRING_LENGTH 256
+#define MAX_STRING_LENGTH 30
 
 unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, char** ptr_to_chars_array);
 void printArray(char** str_array, unsigned int str_array_size);
 void freeArray(char** str_array, unsigned int str_array_size);
-void shiftStringLeftByOne(char* str, int startIndex);
+void shiftStringLeftByOne(char* str, int startIndex, char** ptr_to_chars_array);
 void shiftStringArrayLeftByOne(char** strArray, int arraySize, int startIndex);
 int getPointerArraySize(char** ptr_to_chars_array);
 char** getStrArrayInput(unsigned int* str_array_size);
@@ -46,7 +46,6 @@ int main() {
   ptr_to_chars_array = setPtrToCharsArray(str_array);
   res = RemoveFromStrArray(&str_array, str_array_size, ptr_to_chars_array);
 
-  printf("Deleted strings: %d\n", res);
   printArray(str_array, str_array_size - res);
 
   // Free memory
@@ -58,11 +57,26 @@ int main() {
   return 0;
 }
 
-void shiftStringLeftByOne(char* str, int startIndex) {
-  int i;
+void shiftStringLeftByOne(char* str, int startIndex, char** ptr_to_chars_array) {
+  int i, ptrToCharsArrIndex = 0;
+  char* currentPointer;
 
   for (i = startIndex; i < strlen(str); i++) {
     str[i] = str[i + 1];
+
+    if (i != startIndex) {
+      currentPointer = ptr_to_chars_array[ptrToCharsArrIndex];
+      while (currentPointer != NULL) {
+        if (currentPointer == &str[i]) {
+          currentPointer -= sizeof(char);
+          ptr_to_chars_array[ptrToCharsArrIndex] = currentPointer;
+        }
+
+        ptrToCharsArrIndex++;
+        currentPointer = ptr_to_chars_array[ptrToCharsArrIndex];
+      }
+    }
+    ptrToCharsArrIndex = 0;
   }
 }
 
@@ -82,8 +96,8 @@ unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, 
   char *currentString, *currentCharAddress, *currentPointerAddress;
 
   currentPointerIndex = 0;
-
   currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
+
   // Loop over pointers array
   while (currentPointerAddress != NULL) {
     // Loop over strings array
@@ -95,7 +109,7 @@ unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, 
         currentCharAddress = &currentString[j];
         currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
         if (currentCharAddress == currentPointerAddress) {
-          shiftStringLeftByOne(currentString, j);
+          shiftStringLeftByOne(currentString, j, ptr_to_chars_array);
           currentPointerIndex++;
         }
       }
@@ -106,8 +120,9 @@ unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, 
   for (i = 0; i < str_array_size - deletedStringsCount; i++) {
     currentString = (*str_array)[i];
     if (strlen(currentString) == 0) {
+      shiftStringArrayLeftByOne(*str_array, str_array_size - deletedStringsCount, i);
       deletedStringsCount++;
-      shiftStringArrayLeftByOne(*str_array, str_array_size, i);
+      i--;
     }
   }
 
@@ -138,8 +153,8 @@ char** getStrArrayInput(unsigned int* str_array_size) {
   char* inputString = (char*)malloc(MAX_STRING_LENGTH * sizeof(char));
   char** stringArray = (char**)malloc(1 * sizeof(char*));
 
-  checkMemoryAllocation(stringArray);
   checkMemoryAllocation(inputString);
+  checkMemoryAllocation(stringArray);
 
   scanf("%d", &inputNumberOfWords);
 
