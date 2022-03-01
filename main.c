@@ -3,158 +3,173 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_ROMAN_LENGTH 64
-#define MAX_STRING_LENGTH 120
+#define MAX_STRING_LENGTH 256
 
-void printIntegerAsRomanString(int num);
-void printFormattedIntegers(char* format, char* numbers);
-void printIntegerAsBinaryString(int number);
-int* extractNumbersFromStringToIntegerArray(char* str);
-void fillArrayWithTokens(int arr[], char* str);
-int countTokens(char* str);
-bool isFormattingString(char* string);
-void customPrintfFormatting(char* formattingString, int number);
+unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, char** ptr_to_chars_array);
+void printArray(char** str_array, unsigned int str_array_size);
+void freeArray(char** str_array, unsigned int str_array_size);
+void shiftStringLeftByOne(char* str, int startIndex);
+void shiftStringArrayLeftByOne(char** strArray, int arraySize, int startIndex);
+int getPointerArraySize(char** ptr_to_chars_array);
+char** getStrArrayInput(unsigned int* str_array_size);
+char** setPtrToCharsArray(char** str_array);
+void checkMemoryAllocation(void* ptr);
+
+char** setPtrToCharsArray(char** str_array) {
+  char** res;
+  int size, i;
+  int str_array_row, str_array_col;
+
+  scanf("%d", &size); // Get number of ptrs
+
+  res = (char**)malloc(sizeof(char*) * (size + 1)); // Add 1 for NULL at the end
+
+  for (i = 0; i < size; i++) {
+    scanf("%d", &str_array_row);
+    scanf("%d", &str_array_col);
+    res[i] = str_array[str_array_row] + str_array_col;
+  }
+
+  res[size] = NULL; // Set the last one to NULL
+
+  return res;
+}
 
 int main() {
-  char format[100];
+  char** str_array;
+  unsigned int str_array_size;
+  char** ptr_to_chars_array;
+  unsigned int res;
 
-  char numbers[100];
+  // Get the size and strings from user (can't assume max size for each string)
+  str_array = getStrArrayInput(&str_array_size);
+  ptr_to_chars_array = setPtrToCharsArray(str_array);
+  res = RemoveFromStrArray(&str_array, str_array_size, ptr_to_chars_array);
 
-  gets(format);
+  printf("Deleted strings: %d\n", res);
+  printArray(str_array, str_array_size - res);
 
-  gets(numbers);
+  // Free memory
+  freeArray(str_array, str_array_size - res);
+  free(ptr_to_chars_array);
+  str_array = NULL;
+  ptr_to_chars_array = NULL;
 
-  printFormattedIntegers(format, numbers);
+  return 0;
 }
 
-void printIntegerAsRomanString(int num) {
-  int del[] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-  char* sym[] = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-  char res[MAX_ROMAN_LENGTH] = "\0";
-  int i = 0;
+void shiftStringLeftByOne(char* str, int startIndex) {
+  int i;
 
-  while (num) {
-    while (num / del[i]) {
-      strcat(res, sym[i]);
-      num -= del[i];
-    }
-    i++;
+  for (i = startIndex; i < strlen(str); i++) {
+    str[i] = str[i + 1];
+  }
+}
+
+void shiftStringArrayLeftByOne(char** strArray, int arraySize, int startIndex) {
+  int i;
+
+  for (i = startIndex; i < arraySize - 1; i++) {
+    strcpy(strArray[i], strArray[i + 1]);
   }
 
-  printf("%s", res);
+  free(strArray[arraySize - 1]);
+  strArray[arraySize - 1] = NULL;
 }
 
-void printIntegerAsBinaryString(int number) {
-  if (number == 0) {
-    return;
-  }
+unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, char** ptr_to_chars_array) {
+  int i, j, currentPointerIndex, pointerArraySize, stringLength, deletedStringsCount = 0;
+  char *currentString, *currentCharAddress, *currentPointerAddress;
 
-  printIntegerAsBinaryString(number / 2);
-  printf("%d", number % 2);
-}
+  currentPointerIndex = 0;
 
-void printFormattedIntegers(char* format, char* numbers) {
-  int numbersArrIndex = 0;
-  int* numbersArr;
-  char* formatAsSeparatedStrings;
-
-  numbersArr = extractNumbersFromStringToIntegerArray(numbers);
-
-  char* stringsArr;
-  char copyOfString[MAX_STRING_LENGTH];
-  strcpy(copyOfString, format);
-
-  char* token;
-
-  token = strtok(copyOfString, " ");
-  while (token != NULL) {
-    if (isFormattingString(token)) {
-      customPrintfFormatting(token, numbersArr[numbersArrIndex]);
-      numbersArrIndex++;
-    } else {
-      printf("%s", token);
-    }
-
-    token = strtok(NULL, " ");
-
-    if (token != NULL) {
-      printf(" ");
+  currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
+  // Loop over pointers array
+  while (currentPointerAddress != NULL) {
+    // Loop over strings array
+    for (i = 0; i < str_array_size; i++) {
+      currentString = (*str_array)[i];
+      stringLength = strlen(currentString);
+      // Loop over characters in string
+      for (j = 0; j < stringLength; j++) {
+        currentCharAddress = &currentString[j];
+        currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
+        if (currentCharAddress == currentPointerAddress) {
+          shiftStringLeftByOne(currentString, j);
+          currentPointerIndex++;
+        }
+      }
     }
   }
 
-  return;
+  // Loop over strings array, delete empty strings
+  for (i = 0; i < str_array_size - deletedStringsCount; i++) {
+    currentString = (*str_array)[i];
+    if (strlen(currentString) == 0) {
+      deletedStringsCount++;
+      shiftStringArrayLeftByOne(*str_array, str_array_size, i);
+    }
+  }
+
+  return deletedStringsCount;
 }
 
-int* extractNumbersFromStringToIntegerArray(char* str) {
-  int numberOfTokens = 0;
-  int* numbersArr;
-  char copyOfString[MAX_STRING_LENGTH];
+void printArray(char** str_array, unsigned int str_array_size) {
+  int i;
 
-  strcpy(copyOfString, str);
-  numberOfTokens = countTokens(copyOfString);
-  numbersArr = (int*)malloc(numberOfTokens * sizeof(int));
+  for (i = 0; i < str_array_size; i++) {
+    printf("%s\n", str_array[i]);
+  }
+}
 
-  if (numbersArr == NULL) {
+void freeArray(char** str_array, unsigned int str_array_size) {
+  int i;
+
+  for (i = 0; i < str_array_size; i++) {
+    free(str_array[i]);
+    str_array[i] = NULL;
+  }
+
+  free(str_array);
+}
+
+char** getStrArrayInput(unsigned int* str_array_size) {
+  int stringArrayLogicalSize = 0, stringArrayPhysicalSize = 1, inputStringLength, inputNumberOfWords;
+  char* inputString = (char*)malloc(MAX_STRING_LENGTH * sizeof(char));
+  char** stringArray = (char**)malloc(1 * sizeof(char*));
+
+  checkMemoryAllocation(stringArray);
+  checkMemoryAllocation(inputString);
+
+  scanf("%d", &inputNumberOfWords);
+
+  for (int i = 0; i < inputNumberOfWords; i++) {
+    scanf("%s", inputString);
+    inputStringLength = strlen(inputString);
+
+    if (stringArrayLogicalSize == stringArrayPhysicalSize) {
+      stringArrayPhysicalSize *= 2;
+      stringArray = (char**)realloc(stringArray, stringArrayPhysicalSize * sizeof(char*));
+      checkMemoryAllocation(stringArray);
+    }
+
+    stringArray[stringArrayLogicalSize] = (char*)malloc((inputStringLength + 1) * sizeof(char));
+    checkMemoryAllocation(stringArray[stringArrayLogicalSize]);
+
+    strcpy(stringArray[stringArrayLogicalSize], inputString);
+
+    stringArrayLogicalSize++;
+  }
+
+  free(inputString);
+
+  *str_array_size = stringArrayLogicalSize;
+  return stringArray;
+}
+
+void checkMemoryAllocation(void* ptr) {
+  if (ptr == NULL) {
+    printf("Memory allocation failed!\n");
     exit(1);
-  }
-
-  strcpy(copyOfString, str);
-  fillArrayWithTokens(numbersArr, copyOfString);
-
-  return numbersArr;
-}
-
-int countTokens(char* str) {
-  int count = 0;
-  char* token;
-
-  token = strtok(str, " ");
-  while (token != NULL) {
-    count++;
-    token = strtok(NULL, " ");
-  }
-
-  return count;
-}
-
-void fillArrayWithTokens(int arr[], char* str) {
-  char* token;
-  int i = 0;
-
-  token = strtok(str, " ");
-  while (token != NULL) {
-    sscanf(token, "%d", &arr[i]);
-    token = strtok(NULL, " ");
-    i++;
-  }
-}
-
-bool isFormattingString(char* string) {
-  return string[0] == '%';
-}
-
-void customPrintfFormatting(char* formattingString, int number) {
-  switch (formattingString[1]) {
-    case 'd':
-      printf("%d", number);
-      break;
-    case 'x':
-      printf("%x", number);
-      break;
-    case 'X':
-      printf("%X", number);
-      break;
-    case 'o':
-      printf("%o", number);
-      break;
-    case 'b':
-      printIntegerAsBinaryString(number);
-      break;
-    case 'r':
-      printIntegerAsRomanString(number);
-      break;
-    default:
-      printf("#UNSUPPORTED_FORMAT# ");
-      break;
   }
 }
