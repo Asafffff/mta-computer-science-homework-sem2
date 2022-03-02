@@ -105,7 +105,7 @@ unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, 
       currentString = (*str_array)[i];
       stringLength = strlen(currentString);
       // Loop over characters in string
-      for (j = 0; j < stringLength; j++) {
+      for (j = 0; j <= stringLength; j++) {
         currentCharAddress = &currentString[j];
         currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
         if (currentCharAddress == currentPointerAddress) {
