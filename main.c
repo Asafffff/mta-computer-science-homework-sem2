@@ -8,12 +8,13 @@
 unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, char** ptr_to_chars_array);
 void printArray(char** str_array, unsigned int str_array_size);
 void freeArray(char** str_array, unsigned int str_array_size);
-void shiftStringLeftByOne(char* str, int startIndex, char** ptr_to_chars_array);
+void shiftStringAndMatchingPointersLeftByOne(char* str, int startIndex, char** ptr_to_chars_array);
 void shiftStringArrayLeftByOne(char** strArray, int arraySize, int startIndex);
 int getPointerArraySize(char** ptr_to_chars_array);
 char** getStrArrayInput(unsigned int* str_array_size);
 char** setPtrToCharsArray(char** str_array);
 void checkMemoryAllocation(void* ptr);
+int deleteEmptyStrings(char** str_array, unsigned int str_array_size);
 
 char** setPtrToCharsArray(char** str_array) {
   char** res;
@@ -57,13 +58,15 @@ int main() {
   return 0;
 }
 
-void shiftStringLeftByOne(char* str, int startIndex, char** ptr_to_chars_array) {
+void shiftStringAndMatchingPointersLeftByOne(char* str, int startIndex, char** ptr_to_chars_array) {
   int i, ptrToCharsArrIndex = 0;
   char* currentPointer;
 
   for (i = startIndex; i < strlen(str); i++) {
+    // Shift string
     str[i] = str[i + 1];
 
+    // Shift pointers of the same string, if needed
     if (i != startIndex) {
       currentPointer = ptr_to_chars_array[ptrToCharsArrIndex];
       while (currentPointer != NULL) {
@@ -109,7 +112,7 @@ unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, 
         currentCharAddress = &currentString[j];
         currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
         if (currentCharAddress == currentPointerAddress) {
-          shiftStringLeftByOne(currentString, j, ptr_to_chars_array);
+          shiftStringAndMatchingPointersLeftByOne(currentString, j, ptr_to_chars_array);
           currentPointerIndex++;
         }
       }
@@ -117,10 +120,19 @@ unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, 
   }
 
   // Loop over strings array, delete empty strings
+  deletedStringsCount = deleteEmptyStrings(*str_array, str_array_size);
+
+  return deletedStringsCount;
+}
+
+int deleteEmptyStrings(char** str_array, unsigned int str_array_size) {
+  int i, deletedStringsCount = 0;
+  char* currentString;
+
   for (i = 0; i < str_array_size - deletedStringsCount; i++) {
-    currentString = (*str_array)[i];
+    currentString = str_array[i];
     if (strlen(currentString) == 0) {
-      shiftStringArrayLeftByOne(*str_array, str_array_size - deletedStringsCount, i);
+      shiftStringArrayLeftByOne(str_array, str_array_size - deletedStringsCount, i);
       deletedStringsCount++;
       i--;
     }
