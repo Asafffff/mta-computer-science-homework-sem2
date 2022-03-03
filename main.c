@@ -3,11 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_STRING_LENGTH 30
-
 unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, char** ptr_to_chars_array);
 void printArray(char** str_array, unsigned int str_array_size);
 void freeArray(char** str_array, unsigned int str_array_size);
+char* getInputString();
 void shiftStringAndMatchingPointersLeftByOne(char* str, int startIndex, char** ptr_to_chars_array);
 void shiftStringArrayLeftByOne(char** strArray, int arraySize, int startIndex);
 int getPointerArraySize(char** ptr_to_chars_array);
@@ -21,13 +20,13 @@ char** setPtrToCharsArray(char** str_array) {
   int size, i;
   int str_array_row, str_array_col;
 
-  scanf("%d", &size); // Get number of ptrs
+  scanf(" %d", &size); // Get number of ptrs
 
   res = (char**)malloc(sizeof(char*) * (size + 1)); // Add 1 for NULL at the end
 
   for (i = 0; i < size; i++) {
-    scanf("%d", &str_array_row);
-    scanf("%d", &str_array_col);
+    scanf(" %d", &str_array_row);
+    scanf(" %d", &str_array_col);
     res[i] = str_array[str_array_row] + str_array_col;
   }
 
@@ -161,17 +160,18 @@ void freeArray(char** str_array, unsigned int str_array_size) {
 }
 
 char** getStrArrayInput(unsigned int* str_array_size) {
-  int stringArrayLogicalSize = 0, stringArrayPhysicalSize = 1, inputStringLength, inputNumberOfWords;
-  char* inputString = (char*)malloc(MAX_STRING_LENGTH * sizeof(char));
+  int stringArrayLogicalSize = 0, stringArrayPhysicalSize = 1;
+  int inputNumberOfWords, inputStringLength;
+  char* inputString;
   char** stringArray = (char**)malloc(1 * sizeof(char*));
 
-  checkMemoryAllocation(inputString);
   checkMemoryAllocation(stringArray);
 
-  scanf("%d", &inputNumberOfWords);
+  scanf(" %d", &inputNumberOfWords);
+  getchar();
 
   for (int i = 0; i < inputNumberOfWords; i++) {
-    scanf("%s", inputString);
+    inputString = getInputString();
     inputStringLength = strlen(inputString);
 
     if (stringArrayLogicalSize == stringArrayPhysicalSize) {
@@ -188,8 +188,6 @@ char** getStrArrayInput(unsigned int* str_array_size) {
     stringArrayLogicalSize++;
   }
 
-  free(inputString);
-
   *str_array_size = stringArrayLogicalSize;
   return stringArray;
 }
@@ -199,4 +197,30 @@ void checkMemoryAllocation(void* ptr) {
     printf("Memory allocation failed!\n");
     exit(1);
   }
+}
+
+char* getInputString() {
+  int maxStringLength = 1, stringWriteIndex = 0;
+  char currentChar;
+  char* inputString = (char*)malloc(maxStringLength * sizeof(char));
+
+  checkMemoryAllocation(inputString);
+
+  currentChar = getchar();
+  while (currentChar != '\n') {
+    if (stringWriteIndex == maxStringLength) {
+      maxStringLength *= 2;
+      inputString = (char*)realloc(inputString, maxStringLength * sizeof(char));
+      checkMemoryAllocation(inputString);
+    }
+
+    inputString[stringWriteIndex] = currentChar;
+
+    stringWriteIndex++;
+    currentChar = getchar();
+  }
+  inputString[stringWriteIndex] = '\0';
+  inputString = (char*)realloc(inputString, (stringWriteIndex + 1) * sizeof(char));
+
+  return inputString;
 }
