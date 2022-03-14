@@ -1,226 +1,191 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, char** ptr_to_chars_array);
-void printArray(char** str_array, unsigned int str_array_size);
-void freeArray(char** str_array, unsigned int str_array_size);
-char* getInputString();
-void shiftStringAndMatchingPointersLeftByOne(char* str, int startIndex, char** ptr_to_chars_array);
-void shiftStringArrayLeftByOne(char** strArray, int arraySize, int startIndex);
-int getPointerArraySize(char** ptr_to_chars_array);
-char** getStrArrayInput(unsigned int* str_array_size);
-char** setPtrToCharsArray(char** str_array);
-void checkMemoryAllocation(void* ptr);
-int deleteEmptyStrings(char** str_array, unsigned int str_array_size);
+typedef struct list_node {
+  char* dataPtr;
+  struct list_node* next;
+} ListNode;
 
-char** setPtrToCharsArray(char** str_array) {
-  char** res;
-  int size, i;
-  int str_array_row, str_array_col;
+typedef struct list {
+  ListNode* head;
+  ListNode* tail;
+} List;
 
-  scanf(" %d", &size); // Get number of ptrs
+typedef struct student {
+  List first;
+  int grade;
+} Student;
 
-  res = (char**)malloc(sizeof(char*) * (size + 1)); // Add 1 for NULL at the end
+// ----
+void makeEmptyList(List* lst);
+void insertDataToEndList(List* lst, char data);
+void insertNodeToEndList(List* lst, ListNode* newTail);
+ListNode* createNewListNode(char data, ListNode* next);
+void checkAllocation(void* ptr);
+// ----
 
-  for (i = 0; i < size; i++) {
-    scanf(" %d", &str_array_row);
-    scanf(" %d", &str_array_col);
-    res[i] = str_array[str_array_row] + str_array_col;
+Student unScramble(List lst);
+bool isNodeDataANumber(ListNode* node);
+bool isEmptyList(List lst);
+ListNode* findNextApplicableNode(ListNode* node);
+void printStudent(Student* student);
+void freeList(List* lst);
+int convertCharToInt(char c);
+
+void main() {
+  List lst;
+  Student student;
+  char ch;
+
+  makeEmptyList(&lst);
+
+  printf("Please enter the scrambled student:\n");
+
+  ch = (char)getchar();
+  while (ch != '\n') {
+    insertDataToEndList(&lst, ch);
+    ch = (char)getchar();
   }
 
-  res[size] = NULL; // Set the last one to NULL
+  student = unScramble(lst);
 
-  return res;
+  printStudent(&student);
+
+  freeList(&student.first);
 }
 
-int main() {
-  char** str_array;
-  unsigned int str_array_size;
-  char** ptr_to_chars_array;
-  unsigned int res;
-
-  // Get the size and strings from user (can't assume max size for each string)
-  str_array = getStrArrayInput(&str_array_size);
-  ptr_to_chars_array = setPtrToCharsArray(str_array);
-  res = RemoveFromStrArray(&str_array, str_array_size, ptr_to_chars_array);
-
-  printArray(str_array, str_array_size - res);
-
-  // Free memory
-  freeArray(str_array, str_array_size - res);
-  free(ptr_to_chars_array);
-  str_array = NULL;
-  ptr_to_chars_array = NULL;
-
-  return 0;
+void makeEmptyList(List* lst) {
+  lst->head = lst->tail = NULL;
 }
 
-void shiftStringAndMatchingPointersLeftByOne(char* str, int startIndex, char** ptr_to_chars_array) {
-  int i, ptrToCharsArrIndex = 0;
-  char* currentPointer;
+ListNode* createNewListNode(char data, ListNode* next) {
+  ListNode* result;
 
-  for (i = startIndex; i < strlen(str); i++) {
-    // Shift string
-    str[i] = str[i + 1];
+  result = (ListNode*)malloc(sizeof(ListNode));
+  checkAllocation(result);
 
-    // Shift pointers of the same string, if needed
-    if (i != startIndex) {
-      currentPointer = ptr_to_chars_array[ptrToCharsArrIndex];
-      while (currentPointer != NULL) {
-        if (currentPointer == &str[i]) {
-          currentPointer -= sizeof(char);
-          ptr_to_chars_array[ptrToCharsArrIndex] = currentPointer;
-        }
+  result->dataPtr = (char*)malloc(sizeof(char));
+  *(result->dataPtr) = data;
+  result->next = next;
 
-        ptrToCharsArrIndex++;
-        currentPointer = ptr_to_chars_array[ptrToCharsArrIndex];
+  return result;
+}
+
+void insertDataToEndList(List* lst, char data) {
+  ListNode* result = createNewListNode(data, NULL);
+
+  insertNodeToEndList(lst, result);
+}
+
+void insertNodeToEndList(List* lst, ListNode* newTail) {
+  newTail->next = NULL;
+
+  if (isEmptyList(*lst))
+    lst->head = lst->tail = newTail;
+  else {
+    lst->tail->next = newTail;
+    lst->tail = newTail;
+  }
+}
+
+bool isEmptyList(List lst) {
+  return lst.head == NULL;
+}
+
+bool isNodeDataANumber(ListNode* node) {
+  char ch = *(node->dataPtr);
+
+  return (ch >= '0' && ch <= '9');
+}
+
+ListNode* findNextApplicableNode(ListNode* node) {
+  while (node != NULL && !isNodeDataANumber(node)) {
+    node = node->next;
+  }
+
+  return node;
+}
+
+Student unScramble(List lst) {
+  ListNode* currentNode = lst.head;
+  ListNode* prevNode = NULL;
+  ListNode* nodeToRelease = NULL;
+  bool isFirstNode = true;
+  int grade = 0;
+
+  while (currentNode != NULL) {
+    if (isNodeDataANumber(currentNode)) {
+      if (isFirstNode) {
+        lst.head = currentNode->next;
+      }
+
+      grade *= 10;
+      grade += convertCharToInt(*(currentNode->dataPtr));
+
+      nodeToRelease = currentNode;
+    } else {
+      if (isFirstNode) {
+        isFirstNode = false;
+        prevNode = currentNode;
+      } else {
+        prevNode->next = currentNode;
+        prevNode = currentNode;
       }
     }
-    ptrToCharsArrIndex = 0;
-  }
-}
 
-void shiftStringArrayLeftByOne(char** strArray, int arraySize, int startIndex) {
-  int i;
+    currentNode = currentNode->next;
 
-  for (i = startIndex; i < arraySize - 1; i++) {
-    strcpy(strArray[i], strArray[i + 1]);
-  }
+    if (nodeToRelease != NULL) {
+      free(nodeToRelease->dataPtr);
+      free(nodeToRelease);
+      nodeToRelease = NULL;
+    }
 
-  free(strArray[arraySize - 1]);
-  strArray[arraySize - 1] = NULL;
-}
-
-unsigned int RemoveFromStrArray(char*** str_array, unsigned int str_array_size, char** ptr_to_chars_array) {
-  int i, j, currentPointerIndex, pointerArraySize, stringLength, deletedStringsCount = 0;
-  char *currentString, *currentCharAddress, *currentPointerAddress;
-
-  currentPointerIndex = 0;
-  currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
-
-  // Loop over pointers array
-  while (currentPointerAddress != NULL) {
-    // Loop over strings array
-    for (i = 0; i < str_array_size; i++) {
-      currentString = (*str_array)[i];
-      stringLength = strlen(currentString);
-      // Loop over characters in string
-      for (j = 0; j <= stringLength; j++) {
-        currentCharAddress = &currentString[j];
-        currentPointerAddress = ptr_to_chars_array[currentPointerIndex];
-        if (currentCharAddress == currentPointerAddress) {
-          shiftStringAndMatchingPointersLeftByOne(currentString, j, ptr_to_chars_array);
-          currentPointerIndex++;
-        }
-      }
+    if (currentNode == NULL) {
+      prevNode->next = NULL;
     }
   }
 
-  // Loop over strings array, delete empty strings
-  deletedStringsCount = deleteEmptyStrings(*str_array, str_array_size);
+  lst.tail = prevNode;
 
-  return deletedStringsCount;
+  Student student = {.first = lst, .grade = grade};
+
+  return student;
 }
 
-int deleteEmptyStrings(char** str_array, unsigned int str_array_size) {
-  int i, deletedStringsCount = 0;
-  char* currentString;
-
-  for (i = 0; i < str_array_size - deletedStringsCount; i++) {
-    currentString = str_array[i];
-    if (strlen(currentString) == 0) {
-      shiftStringArrayLeftByOne(str_array, str_array_size - deletedStringsCount, i);
-      deletedStringsCount++;
-      i--;
-    }
-  }
-
-  return deletedStringsCount;
-}
-
-void printArray(char** str_array, unsigned int str_array_size) {
-  int i;
-
-  for (i = 0; i < str_array_size; i++) {
-    printf("%s\n", str_array[i]);
-  }
-}
-
-void freeArray(char** str_array, unsigned int str_array_size) {
-  int i;
-
-  for (i = 0; i < str_array_size; i++) {
-    free(str_array[i]);
-    str_array[i] = NULL;
-  }
-
-  free(str_array);
-}
-
-char** getStrArrayInput(unsigned int* str_array_size) {
-  int stringArrayLogicalSize = 0, stringArrayPhysicalSize = 1;
-  int inputNumberOfWords, inputStringLength;
-  char* inputString;
-  char** stringArray = (char**)malloc(1 * sizeof(char*));
-
-  checkMemoryAllocation(stringArray);
-
-  scanf(" %d", &inputNumberOfWords);
-  getchar();
-
-  for (int i = 0; i < inputNumberOfWords; i++) {
-    inputString = getInputString();
-    inputStringLength = strlen(inputString);
-
-    if (stringArrayLogicalSize == stringArrayPhysicalSize) {
-      stringArrayPhysicalSize *= 2;
-      stringArray = (char**)realloc(stringArray, stringArrayPhysicalSize * sizeof(char*));
-      checkMemoryAllocation(stringArray);
-    }
-
-    stringArray[stringArrayLogicalSize] = (char*)malloc((inputStringLength + 1) * sizeof(char));
-    checkMemoryAllocation(stringArray[stringArrayLogicalSize]);
-
-    strcpy(stringArray[stringArrayLogicalSize], inputString);
-
-    stringArrayLogicalSize++;
-  }
-
-  *str_array_size = stringArrayLogicalSize;
-  return stringArray;
-}
-
-void checkMemoryAllocation(void* ptr) {
+void checkAllocation(void* ptr) {
   if (ptr == NULL) {
-    printf("Memory allocation failed!\n");
-    exit(1);
+    printf("Allocation error\n");
+    exit(-1);
   }
 }
 
-char* getInputString() {
-  int maxStringLength = 1, stringWriteIndex = 0;
-  char currentChar;
-  char* inputString = (char*)malloc(maxStringLength * sizeof(char));
-
-  checkMemoryAllocation(inputString);
-
-  currentChar = getchar();
-  while (currentChar != '\n') {
-    if (stringWriteIndex == maxStringLength) {
-      maxStringLength *= 2;
-      inputString = (char*)realloc(inputString, maxStringLength * sizeof(char));
-      checkMemoryAllocation(inputString);
-    }
-
-    inputString[stringWriteIndex] = currentChar;
-
-    stringWriteIndex++;
-    currentChar = getchar();
+void printStudent(Student* student) {
+  printf("First name: ");
+  ListNode* currentNode = student->first.head;
+  while (currentNode != NULL) {
+    printf("%c", *(currentNode->dataPtr));
+    currentNode = currentNode->next;
   }
-  inputString[stringWriteIndex] = '\0';
-  inputString = (char*)realloc(inputString, (stringWriteIndex + 1) * sizeof(char));
+  printf("\n");
+  printf("Grade: %d\n", student->grade);
+}
 
-  return inputString;
+void freeList(List* lst) {
+  ListNode* currentNode = lst->head;
+  ListNode* nextNode = NULL;
+
+  while (currentNode != NULL) {
+    nextNode = currentNode->next;
+    free(currentNode->dataPtr);
+    free(currentNode);
+    currentNode = nextNode;
+  }
+}
+
+int convertCharToInt(char c) {
+  return c - '0';
 }
