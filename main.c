@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct list_node {
-  char* dataPtr;
-  struct list_node* next;
+typedef struct listNode {
+  int* dataPtr;
+  struct listNode* next;
 } ListNode;
 
 typedef struct list {
@@ -14,67 +14,72 @@ typedef struct list {
   ListNode* tail;
 } List;
 
-typedef struct student {
-  List first;
-  int grade;
-} Student;
+List getList();
+List merge(List lst1, List lst2);
+void printList(List* lst);
 
-// ----
-void makeEmptyList(List* lst);
-void insertDataToEndList(List* lst, char data);
-void insertNodeToEndList(List* lst, ListNode* newTail);
-ListNode* createNewListNode(char data, ListNode* next);
-void checkAllocation(void* ptr);
-// ----
-
-Student unScramble(List lst);
-bool isNodeDataANumber(ListNode* node);
-bool isEmptyList(List lst);
-ListNode* findNextApplicableNode(ListNode* node);
-void printStudent(Student* student);
+// --------------------------------------------------
 void freeList(List* lst);
-int convertCharToInt(char c);
+void makeEmptyList(List* lst);
+bool isEmptyList(List lst);
+ListNode* createNewListNode(int data, ListNode* next);
+void insertDataToEndList(List* lst, int data);
+void insertNodeToEndList(List* lst, ListNode* newTail);
+void checkAllocation(void* ptr);
+// --------------------------------------------------
 
 void main() {
-  List lst;
-  Student student;
-  char ch;
+  List lst1, lst2, mergedList;
 
-  makeEmptyList(&lst);
+  lst1 = getList();
+  lst2 = getList();
 
-  printf("Please enter the scrambled student:\n");
+  mergedList = merge(lst1, lst2);
 
-  ch = (char)getchar();
-  while (ch != '\n') {
-    insertDataToEndList(&lst, ch);
-    ch = (char)getchar();
+  printf("Merged list:\n");
+  printList(&mergedList);
+
+  freeList(&lst1);
+  freeList(&lst2);
+  freeList(&mergedList);
+}
+
+List getList() {
+  List res;
+  int size, num, i;
+
+  makeEmptyList(&res);
+
+  printf("Please enter the number of items to be entered:\n");
+  scanf("%d", &size);
+
+  printf("Please enter the numbers:\n");
+  for (i = 0; i < size; i++) {
+    scanf("%d", &num);
+    insertDataToEndList(&res, num);
   }
 
-  student = unScramble(lst);
-
-  printStudent(&student);
-
-  freeList(&student.first);
+  return res;
 }
 
 void makeEmptyList(List* lst) {
   lst->head = lst->tail = NULL;
 }
 
-ListNode* createNewListNode(char data, ListNode* next) {
+ListNode* createNewListNode(int data, ListNode* next) {
   ListNode* result;
 
   result = (ListNode*)malloc(sizeof(ListNode));
   checkAllocation(result);
 
-  result->dataPtr = (char*)malloc(sizeof(char));
+  result->dataPtr = (int*)malloc(sizeof(int));
   *(result->dataPtr) = data;
   result->next = next;
 
   return result;
 }
 
-void insertDataToEndList(List* lst, char data) {
+void insertDataToEndList(List* lst, int data) {
   ListNode* result = createNewListNode(data, NULL);
 
   insertNodeToEndList(lst, result);
@@ -91,101 +96,71 @@ void insertNodeToEndList(List* lst, ListNode* newTail) {
   }
 }
 
+void freeList(List* lst) {
+  ListNode *curr = (*lst).head, *next;
+
+  while (curr != NULL) {
+    next = curr->next;
+    free(curr->dataPtr);
+    free(curr);
+    curr = next;
+  }
+}
+
 bool isEmptyList(List lst) {
   return lst.head == NULL;
 }
 
-bool isNodeDataANumber(ListNode* node) {
-  char ch = *(node->dataPtr);
+List merge(List lst1, List lst2) {
+  List resultList;
+  makeEmptyList(&resultList);
 
-  return (ch >= '0' && ch <= '9');
-}
+  int list1NodeData, list2NodeData;
 
-ListNode* findNextApplicableNode(ListNode* node) {
-  while (node != NULL && !isNodeDataANumber(node)) {
-    node = node->next;
-  }
+  ListNode* currentList1Node = lst1.head;
+  ListNode* currentList2Node = lst2.head;
 
-  return node;
-}
+  while (currentList1Node != NULL && currentList2Node != NULL) {
+    list1NodeData = *(currentList1Node->dataPtr);
+    list2NodeData = *(currentList2Node->dataPtr);
 
-Student unScramble(List lst) {
-  ListNode* currentNode = lst.head;
-  ListNode* prevNode = NULL;
-  ListNode* nodeToRelease = NULL;
-  bool isFirstNode = true;
-  int grade = 0;
-
-  while (currentNode != NULL) {
-    if (isNodeDataANumber(currentNode)) {
-      if (isFirstNode) {
-        lst.head = currentNode->next;
-      }
-
-      grade *= 10;
-      grade += convertCharToInt(*(currentNode->dataPtr));
-
-      nodeToRelease = currentNode;
+    if (list1NodeData > list2NodeData) {
+      insertDataToEndList(&resultList, list1NodeData);
+      currentList1Node = currentList1Node->next;
     } else {
-      if (isFirstNode) {
-        isFirstNode = false;
-        prevNode = currentNode;
-      } else {
-        prevNode->next = currentNode;
-        prevNode = currentNode;
-      }
-    }
-
-    currentNode = currentNode->next;
-
-    if (nodeToRelease != NULL) {
-      free(nodeToRelease->dataPtr);
-      free(nodeToRelease);
-      nodeToRelease = NULL;
-    }
-
-    if (currentNode == NULL) {
-      prevNode->next = NULL;
+      insertDataToEndList(&resultList, list2NodeData);
+      currentList2Node = currentList2Node->next;
     }
   }
 
-  lst.tail = prevNode;
+  while (currentList1Node != NULL) {
+    list1NodeData = *(currentList1Node->dataPtr);
+    insertDataToEndList(&resultList, list1NodeData);
+    currentList1Node = currentList1Node->next;
+  }
 
-  Student student = {.first = lst, .grade = grade};
+  while (currentList2Node != NULL) {
+    list2NodeData = *(currentList2Node->dataPtr);
+    insertDataToEndList(&resultList, list2NodeData);
+    currentList2Node = currentList2Node->next;
+  }
 
-  return student;
+  return resultList;
 }
 
 void checkAllocation(void* ptr) {
   if (ptr == NULL) {
-    printf("Allocation error\n");
-    exit(-1);
+    exit(1);
   }
 }
 
-void printStudent(Student* student) {
-  printf("First name: ");
-  ListNode* currentNode = student->first.head;
-  while (currentNode != NULL) {
-    printf("%c", *(currentNode->dataPtr));
-    currentNode = currentNode->next;
+void printList(List* lst) {
+  ListNode* curr = (*lst).head;
+
+  while (curr != NULL) {
+    printf("%d ", *(curr->dataPtr));
+    curr = curr->next;
   }
+
   printf("\n");
-  printf("Grade: %d\n", student->grade);
-}
-
-void freeList(List* lst) {
-  ListNode* currentNode = lst->head;
-  ListNode* nextNode = NULL;
-
-  while (currentNode != NULL) {
-    nextNode = currentNode->next;
-    free(currentNode->dataPtr);
-    free(currentNode);
-    currentNode = nextNode;
-  }
-}
-
-int convertCharToInt(char c) {
-  return c - '0';
 }
