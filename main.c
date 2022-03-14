@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define UNINITIALIZED_VALUE 0
+
 typedef struct listNode {
   int* dataPtr;
   struct listNode* next;
@@ -16,6 +18,11 @@ typedef struct list {
 
 List getList();
 List merge(List lst1, List lst2);
+void printList(List* lst);
+
+List getList();
+List merge(List lst1, List lst2);
+void mergeRec(ListNode* list1Node, ListNode* list2Node, List* mergedList);
 void printList(List* lst);
 
 // --------------------------------------------------
@@ -40,6 +47,8 @@ void main() {
   printf("Merged list:\n");
   printList(&mergedList);
 
+  freeList(&lst1);
+  freeList(&lst2);
   freeList(&mergedList);
 }
 
@@ -110,44 +119,43 @@ bool isEmptyList(List lst) {
   return lst.head == NULL;
 }
 
+void mergeRec(ListNode* list1Node, ListNode* list2Node, List* mergedList) {
+  int list1NodeData, list2NodeData;
+  list1NodeData = list2NodeData = UNINITIALIZED_VALUE;
+
+  if (list1Node == NULL || list2Node == NULL) {
+    if (list1Node == NULL && list2Node == NULL) {
+      return;
+    } else if (list1Node == NULL) {
+      list2NodeData = *(list2Node->dataPtr);
+      insertDataToEndList(mergedList, list2NodeData);
+      mergeRec(list1Node, list2Node->next, mergedList);
+      return;
+    } else {
+      list1NodeData = *(list1Node->dataPtr);
+      insertDataToEndList(mergedList, list1NodeData);
+      mergeRec(list1Node->next, list2Node, mergedList);
+      return;
+    }
+  }
+
+  list1NodeData = *(list1Node->dataPtr);
+  list2NodeData = *(list2Node->dataPtr);
+
+  if (list1NodeData > list2NodeData) {
+    insertDataToEndList(mergedList, list1NodeData);
+    mergeRec(list1Node->next, list2Node, mergedList);
+  } else {
+    insertDataToEndList(mergedList, list2NodeData);
+    mergeRec(list1Node, list2Node->next, mergedList);
+  }
+}
+
 List merge(List lst1, List lst2) {
   List resultList;
   makeEmptyList(&resultList);
 
-  int list1NodeData, list2NodeData;
-
-  ListNode* currentList1Node = lst1.head;
-  ListNode* currentList2Node = lst2.head;
-  ListNode* tmpNextNode = NULL;
-
-  while (currentList1Node != NULL && currentList2Node != NULL) {
-    list1NodeData = *(currentList1Node->dataPtr);
-    list2NodeData = *(currentList2Node->dataPtr);
-
-    if (list1NodeData > list2NodeData) {
-      tmpNextNode = currentList1Node->next;
-      insertNodeToEndList(&resultList, currentList1Node);
-      currentList1Node = tmpNextNode;
-    } else {
-      tmpNextNode = currentList2Node->next;
-      insertNodeToEndList(&resultList, currentList2Node);
-      currentList2Node = tmpNextNode;
-    }
-  }
-
-  while (currentList1Node != NULL) {
-    list1NodeData = *(currentList1Node->dataPtr);
-    tmpNextNode = currentList1Node->next;
-    insertNodeToEndList(&resultList, currentList1Node);
-    currentList1Node = tmpNextNode;
-  }
-
-  while (currentList2Node != NULL) {
-    list2NodeData = *(currentList2Node->dataPtr);
-    tmpNextNode = currentList2Node->next;
-    insertNodeToEndList(&resultList, currentList2Node);
-    currentList2Node = tmpNextNode;
-  }
+  mergeRec(lst1.head, lst2.head, &resultList);
 
   return resultList;
 }
