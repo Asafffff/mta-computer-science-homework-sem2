@@ -211,23 +211,22 @@ List getCoordList() {
 }
 
 unsigned int getPairOccurrences(List coord_list, int x, int y) {
+  unsigned int res = 0;
+  XListNode* currentXNode = coord_list.head;
 
-  // unsigned int res = 0;
-  // XListNode* curr = coord_list.head;
+  while (currentXNode != NULL) {
+    if (currentXNode->data == x) {
+      YListNode* currY = currentXNode->yCoordinateList.head;
 
-  // while (curr != NULL) {
-  //   if (curr->data == x) {
-  //     YListNode* currY = curr->yCoordinateList.head;
+      while (currY != NULL) {
+        if (currY->data == y) {
+          res++;
+        }
+        currY = currY->next;
+      }
+    }
+    currentXNode = currentXNode->next;
+  }
 
-  //     while (currY != NULL) {
-  //       if (*(currY->dataPtr) == y) {
-  //         res++;
-  //       }
-  //       currY = currY->next;
-  //     }
-  //   }
-  //   curr = curr->next;
-  // }
-
-  // return res;
+  return res;
 }
