@@ -28,7 +28,7 @@ typedef struct list {
   XListNode* tail;
 } List;
 
-unsigned int getXOccurrences(List coord_list, int x);
+int insertCoordinate(List* coord_list, int x, int y);
 void printList(List* lst);
 List getCoordList();
 
@@ -50,18 +50,21 @@ void checkAllocation(void* ptr);
 
 void main() {
   List coordList;
-  int x;
-  unsigned int res;
-
+  int x, y;
+  int res;
   coordList = getCoordList();
 
-  // get the (x,*) to look for
-  scanf("%d", &x);
+  // get the (x,y) to insert
+  scanf("%d%d", &x, &y);
+  res = insertCoordinate(&coordList, x, y);
 
-  res = getXOccurrences(coordList, x);
+  if (res == 0)
+    printf("The point (%d,%d) didn't appear\n", x, y);
+  else
+    printf("The point (%d,%d) already appeared\n", x, y);
 
-  printf("The point (%d,*) appears %u times\n", x, res);
-
+  printf("Updated list: ");
+  printList(&coordList);
   freeList(&coordList);
 }
 
@@ -169,11 +172,25 @@ void checkAllocation(void* ptr) {
 }
 
 void printList(List* lst) {
-  XListNode* curr = (*lst).head;
+  XListNode* currX = (*lst).head;
 
-  while (curr != NULL) {
-    printf("%d ", curr->data);
-    curr = curr->next;
+  while (currX != NULL) {
+    YListNode* currY = currX->yCoordinateList.head;
+    while (currY != NULL) {
+      printf("(%d,%d)", currX->data, currY->data);
+
+      if (currY->next != NULL) {
+        printf(", ");
+      }
+
+      currY = currY->next;
+    }
+
+    if (currX->next != NULL) {
+      printf(", ");
+    }
+
+    currX = currX->next;
   }
 
   printf("\n");
@@ -203,22 +220,39 @@ List getCoordList() {
   return xCoordList;
 }
 
-unsigned int getXOccurrences(List coord_list, int x) {
-  unsigned int result = 0;
-  XListNode* currX = coord_list.head;
+int insertCoordinate(List* coord_list, int x, int y) {
+  XListNode* prevX;
+  XListNode* currX = (*coord_list).head;
+  bool isAlreadyExist = false, isInserted = false;
 
-  while (currX != NULL) {
+  while (currX != NULL && !isAlreadyExist) {
     if (currX->data == x) {
+      YListNode* prevY;
       YListNode* currY = currX->yCoordinateList.head;
-      while (currY != NULL) {
-        result++;
+      while (currY != NULL && !isAlreadyExist) {
+        if (currY->data == y) {
+          isAlreadyExist = true;
+        }
 
+        prevY = currY;
         currY = currY->next;
       }
-      break;
+
+      YListNode* newYNode = createNewListNodeY(y, NULL);
+      insertNodeToEndListY(&(currX->yCoordinateList), newYNode);
+      isInserted = true;
     }
+
     currX = currX->next;
   }
 
-  return result;
+  if (!isInserted) {
+    XListNode* newXNode = createNewListNode(x, NULL);
+    YListNode* newYNode = createNewListNodeY(y, NULL);
+    insertNodeToEndList(coord_list, newXNode);
+    makeEmptyListY(&(*coord_list).tail->yCoordinateList);
+    insertNodeToEndListY(&(newXNode->yCoordinateList), newYNode);
+  }
+
+  return (int)isAlreadyExist;
 }
