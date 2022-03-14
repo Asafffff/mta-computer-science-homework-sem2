@@ -5,6 +5,10 @@
 #include <string.h>
 
 #define UNINITIALIZED -1
+#define COORDINATE_NOT_FOUND 1
+#define COORDINATE_HAS_ANOTHER_OCCURRENCE 2
+#define COORDINATE_X_WAS_UNIQUE 3
+#define DEFAULT_COORDINATE_RESULT 0
 
 typedef struct YlistNode {
   int data;
@@ -28,7 +32,7 @@ typedef struct list {
   XListNode* tail;
 } List;
 
-int insertCoordinate(List* coord_list, int x, int y);
+int removeCoordinate(List* coord_list, int x, int y);
 void printList(List* lst);
 List getCoordList();
 
@@ -54,15 +58,18 @@ void main() {
   int res;
   coordList = getCoordList();
 
-  // get the (x,y) to insert
+  // get the (x,y) to remove
   scanf("%d%d", &x, &y);
-  res = insertCoordinate(&coordList, x, y);
+  res = removeCoordinate(&coordList, x, y);
 
-  if (res == 0)
+  if (res == 1)
     printf("The point (%d,%d) didn't appear\n", x, y);
+  else if (res == 2)
+    printf("The point (%d,%d) has another occurrence\n", x, y);
+  else if (res == 3)
+    printf("The point (%d,%d) was the only point with this x\n", x, y);
   else
-    printf("The point (%d,%d) already appeared\n", x, y);
-
+    printf("Other\n");
   printf("Updated list: ");
   printList(&coordList);
   freeList(&coordList);
@@ -220,39 +227,47 @@ List getCoordList() {
   return xCoordList;
 }
 
-int insertCoordinate(List* coord_list, int x, int y) {
-  XListNode* prevX;
-  XListNode* currX = (*coord_list).head;
-  bool isAlreadyExist = false, isInserted = false;
+int removeCoordinate(List* coord_list, int x, int y) {
+  XListNode *currX = (*coord_list).head, *prevX = NULL;
+  YListNode *currY, *prevY = NULL;
+  bool isCoordinateDeleted = false;
 
-  while (currX != NULL && !isAlreadyExist) {
+  while (currX != NULL) {
     if (currX->data == x) {
-      YListNode* prevY;
-      YListNode* currY = currX->yCoordinateList.head;
-      while (currY != NULL && !isAlreadyExist) {
-        if (currY->data == y) {
-          isAlreadyExist = true;
+      currY = currX->yCoordinateList.head;
+      while (currY != NULL) {
+        if (currY->data == y && !isCoordinateDeleted) {
+          if (prevY != NULL) {
+            prevY->next = currY->next;
+          } else {
+            currX->yCoordinateList.head = currY->next;
+          }
+          isCoordinateDeleted = true;
+        } else if (currY->data == y) {
+          return COORDINATE_HAS_ANOTHER_OCCURRENCE;
         }
 
         prevY = currY;
         currY = currY->next;
       }
-
-      YListNode* newYNode = createNewListNodeY(y, NULL);
-      insertNodeToEndListY(&(currX->yCoordinateList), newYNode);
-      isInserted = true;
     }
 
+    if (currX->yCoordinateList.head == NULL) {
+      if (prevX != NULL) {
+        prevX->next = currX->next;
+      } else {
+        (*coord_list).head = currX->next;
+      }
+      return COORDINATE_X_WAS_UNIQUE;
+    }
+
+    prevX = currX;
     currX = currX->next;
   }
 
-  if (!isInserted) {
-    XListNode* newXNode = createNewListNode(x, NULL);
-    YListNode* newYNode = createNewListNodeY(y, NULL);
-    insertNodeToEndList(coord_list, newXNode);
-    makeEmptyListY(&(*coord_list).tail->yCoordinateList);
-    insertNodeToEndListY(&(newXNode->yCoordinateList), newYNode);
+  if (!isCoordinateDeleted) {
+    return COORDINATE_NOT_FOUND;
   }
 
-  return (int)isAlreadyExist;
+  return DEFAULT_COORDINATE_RESULT;
 }
