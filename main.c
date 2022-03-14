@@ -28,7 +28,7 @@ typedef struct list {
   XListNode* tail;
 } List;
 
-unsigned int getYOccurrences(List coord_list, int y);
+unsigned int getXOccurrences(List coord_list, int x);
 void printList(List* lst);
 List getCoordList();
 
@@ -50,17 +50,17 @@ void checkAllocation(void* ptr);
 
 void main() {
   List coordList;
-  int y;
+  int x;
   unsigned int res;
 
   coordList = getCoordList();
 
-  // get the (*,y) to look for
-  scanf("%d", &y);
+  // get the (x,*) to look for
+  scanf("%d", &x);
 
-  res = getYOccurrences(coordList, y);
+  res = getXOccurrences(coordList, x);
 
-  printf("The point (*,%d) appears %u times\n", y, res);
+  printf("The point (%d,*) appears %u times\n", x, res);
 
   freeList(&coordList);
 }
@@ -203,19 +203,20 @@ List getCoordList() {
   return xCoordList;
 }
 
-unsigned int getYOccurrences(List coord_list, int y) {
+unsigned int getXOccurrences(List coord_list, int x) {
   unsigned int result = 0;
   XListNode* currX = coord_list.head;
 
   while (currX != NULL) {
-    YListNode* currY = currX->yCoordinateList.head;
-
-    while (currY != NULL) {
-      if (currY->data == y)
+    if (currX->data == x) {
+      YListNode* currY = currX->yCoordinateList.head;
+      while (currY != NULL) {
         result++;
-      currY = currY->next;
-    }
 
+        currY = currY->next;
+      }
+      break;
+    }
     currX = currX->next;
   }
 
