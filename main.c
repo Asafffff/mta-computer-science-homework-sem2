@@ -29,6 +29,7 @@ void checkAllocation(void* ptr);
 // --------------------------------------------------
 
 void main() {
+
   List lst1, lst2, mergedList;
 
   lst1 = getList();
@@ -39,8 +40,6 @@ void main() {
   printf("Merged list:\n");
   printList(&mergedList);
 
-  freeList(&lst1);
-  freeList(&lst2);
   freeList(&mergedList);
 }
 
@@ -119,30 +118,35 @@ List merge(List lst1, List lst2) {
 
   ListNode* currentList1Node = lst1.head;
   ListNode* currentList2Node = lst2.head;
+  ListNode* tmpNextNode = NULL;
 
   while (currentList1Node != NULL && currentList2Node != NULL) {
     list1NodeData = *(currentList1Node->dataPtr);
     list2NodeData = *(currentList2Node->dataPtr);
 
     if (list1NodeData > list2NodeData) {
-      insertDataToEndList(&resultList, list1NodeData);
-      currentList1Node = currentList1Node->next;
+      tmpNextNode = currentList1Node->next;
+      insertNodeToEndList(&resultList, currentList1Node);
+      currentList1Node = tmpNextNode;
     } else {
-      insertDataToEndList(&resultList, list2NodeData);
-      currentList2Node = currentList2Node->next;
+      tmpNextNode = currentList2Node->next;
+      insertNodeToEndList(&resultList, currentList2Node);
+      currentList2Node = tmpNextNode;
     }
   }
 
   while (currentList1Node != NULL) {
     list1NodeData = *(currentList1Node->dataPtr);
-    insertDataToEndList(&resultList, list1NodeData);
-    currentList1Node = currentList1Node->next;
+    tmpNextNode = currentList1Node->next;
+    insertNodeToEndList(&resultList, currentList1Node);
+    currentList1Node = tmpNextNode;
   }
 
   while (currentList2Node != NULL) {
     list2NodeData = *(currentList2Node->dataPtr);
-    insertDataToEndList(&resultList, list2NodeData);
-    currentList2Node = currentList2Node->next;
+    tmpNextNode = currentList2Node->next;
+    insertNodeToEndList(&resultList, currentList2Node);
+    currentList2Node = tmpNextNode;
   }
 
   return resultList;
