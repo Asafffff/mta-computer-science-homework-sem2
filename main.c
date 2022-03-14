@@ -47,8 +47,6 @@ void main() {
   printf("Merged list:\n");
   printList(&mergedList);
 
-  freeList(&lst1);
-  freeList(&lst2);
   freeList(&mergedList);
 }
 
@@ -121,20 +119,22 @@ bool isEmptyList(List lst) {
 
 void mergeRec(ListNode* list1Node, ListNode* list2Node, List* mergedList) {
   int list1NodeData, list2NodeData;
+  ListNode* tmpNextNode = NULL;
+
   list1NodeData = list2NodeData = UNINITIALIZED_VALUE;
 
   if (list1Node == NULL || list2Node == NULL) {
     if (list1Node == NULL && list2Node == NULL) {
       return;
     } else if (list1Node == NULL) {
-      list2NodeData = *(list2Node->dataPtr);
-      insertDataToEndList(mergedList, list2NodeData);
-      mergeRec(list1Node, list2Node->next, mergedList);
+      tmpNextNode = list2Node->next;
+      insertNodeToEndList(mergedList, list2Node);
+      mergeRec(NULL, tmpNextNode, mergedList);
       return;
     } else {
-      list1NodeData = *(list1Node->dataPtr);
-      insertDataToEndList(mergedList, list1NodeData);
-      mergeRec(list1Node->next, list2Node, mergedList);
+      tmpNextNode = list1Node->next;
+      insertNodeToEndList(mergedList, list1Node);
+      mergeRec(tmpNextNode, NULL, mergedList);
       return;
     }
   }
@@ -143,11 +143,13 @@ void mergeRec(ListNode* list1Node, ListNode* list2Node, List* mergedList) {
   list2NodeData = *(list2Node->dataPtr);
 
   if (list1NodeData > list2NodeData) {
-    insertDataToEndList(mergedList, list1NodeData);
-    mergeRec(list1Node->next, list2Node, mergedList);
+    tmpNextNode = list1Node->next;
+    insertNodeToEndList(mergedList, list1Node);
+    mergeRec(tmpNextNode, list2Node, mergedList);
   } else {
-    insertDataToEndList(mergedList, list2NodeData);
-    mergeRec(list1Node, list2Node->next, mergedList);
+    tmpNextNode = list2Node->next;
+    insertNodeToEndList(mergedList, list2Node);
+    mergeRec(list1Node, tmpNextNode, mergedList);
   }
 }
 
