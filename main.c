@@ -86,8 +86,12 @@ Tree BuildTreeFromArray(int* arr, int size) {
 TreeNode* BuildTreeFromArrayRec(int* arr, int size) {
   int newNodeData = arr[size / 2];
 
-  if (newNodeData == -1 || size == 0) {
+  if (newNodeData == -1) {
     return NULL;
+  }
+
+  if (size == 1) {
+    return createTreeNode(newNodeData, NULL, NULL);
   }
 
   TreeNode* leftNode = BuildTreeFromArrayRec(arr, (size / 2));
