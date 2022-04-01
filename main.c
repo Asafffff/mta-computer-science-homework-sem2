@@ -1,24 +1,49 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "trees.h"
 
+typedef int BOOL;
+#define FALSE 0
+#define TRUE 1
 #define SIZE 100
 
+typedef struct TreeNode {
+  unsigned int data;
+  struct TreeNode* right;
+  struct TreeNode* left;
+} TreeNode;
+
+typedef struct Tree {
+  TreeNode* root;
+} Tree;
+
+Tree BuildTreeFromArray(int* arr, int size);
+TreeNode* BuildTreeFromArrayRec(int* arr, int size);
+void printTreeInorder(Tree root);
+void printTreeInorderRec(TreeNode* root);
+bool buildExpressionTree(char* expression, Tree* tree);
+double calcExpression(Tree tr);
+// --------------------------------------------------
+TreeNode* createTreeNode(int data, TreeNode* left, TreeNode* right);
+void freeTree(Tree tr);
+void freeTreeRec(TreeNode* root);
 void checkAllocation(void* ptr);
 
 void main() {
-  int size, i;
-  int arr[SIZE];
+  char str[SIZE];
   Tree tr;
-  printf("Please enter the number of items: ");
-  scanf("%d", &size);
+  double res;
+  BOOL expressionOK;
 
-  for (i = 0; i < size; i++)
-    scanf("%d", &arr[i]);
+  printf("Please enter the expression: ");
+  gets(str);
+  expressionOK = buildExpressionTree(str, &tr);
 
-  tr = BuildTreeFromArray(arr, size);
+  if (expressionOK == TRUE) {
+    res = calcExpression(tr);
+    printf("%s = %.2f", str, res);
+  } else
+    printf("The input expression is not valid\n");
 
-  printf("The tree in inorder (LDR) format:\n");
-  printTreeInorder(tr); // Print the tree in-order (LDR)
   freeTree(tr);
 }
 
