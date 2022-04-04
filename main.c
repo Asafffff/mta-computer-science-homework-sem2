@@ -131,7 +131,7 @@ TreeNode* buildExpressionTreeRec(char* expression) {
 
   operatorIndex = findParentOperatorIndex(expression);
   if (operatorIndex == -1) {
-    return FALSE;
+    return NULL;
   }
 
   char* leftSubExpression = createSubExpressionByIndices(expression, 1, operatorIndex - 1);
