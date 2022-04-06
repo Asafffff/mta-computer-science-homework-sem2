@@ -1,11 +1,10 @@
 #include "trees.h"
 
-TreeNode* createTreeNode(int data, TreeNode* parent, TreeNode* left, TreeNode* right) {
+TreeNode* createTreeNode(int data, TreeNode* left, TreeNode* right) {
   TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
   checkAllocation(newNode);
 
   newNode->data = data;
-  newNode->parent = parent;
   newNode->left = left;
   newNode->right = right;
 
@@ -14,7 +13,6 @@ TreeNode* createTreeNode(int data, TreeNode* parent, TreeNode* left, TreeNode* r
 
 void freeTree(Tree tr) {
   freeTreeRec(tr.root);
-  freeListRec(tr.leafList.head);
 }
 
 void freeTreeRec(TreeNode* root) {
@@ -40,30 +38,15 @@ void printTreeInorderRec(TreeNode* root) {
   printTreeInorderRec(root->right);
 }
 
-void printLeafList(Tree tr) {
-  printLeafListRec(tr.leafList.head);
-}
-
-void updateSubNodesParents(TreeNode* node) {
-  if (node->left != NULL) {
-    node->left->parent = node;
-  }
-  if (node->right != NULL) {
-    node->right->parent = node;
-  }
-}
-
-Tree BuildTreeFromArrayWithLeafList(int* arr, int size) {
+Tree BuildTreeFromArray(int* arr, int size) {
   Tree tr;
-  initEmptyList(&tr.leafList);
 
-  tr.root = BuildTreeFromArrayWithLeafListRec(&tr, arr, size);
+  tr.root = BuildTreeFromArrayRec(arr, size);
 
   return tr;
 }
 
-TreeNode* BuildTreeFromArrayWithLeafListRec(Tree* tr, int* arr, int size) {
-  TreeNode* parentNode = NULL;
+TreeNode* BuildTreeFromArrayRec(int* arr, int size) {
   int newNodeData = arr[size / 2];
 
   if (newNodeData == -1) {
@@ -71,85 +54,121 @@ TreeNode* BuildTreeFromArrayWithLeafListRec(Tree* tr, int* arr, int size) {
   }
 
   if (size == 1) {
-    insertDataToEndOfList(&(tr->leafList), newNodeData);
-    parentNode = createTreeNode(newNodeData, NULL, NULL, NULL);
-    return parentNode;
+    return createTreeNode(newNodeData, NULL, NULL);
   }
 
-  TreeNode* leftNode = BuildTreeFromArrayWithLeafListRec(tr, arr, (size / 2));
-  TreeNode* rightNode = BuildTreeFromArrayWithLeafListRec(tr, arr + (size / 2) + 1, size / 2);
+  TreeNode* leftNode = BuildTreeFromArrayRec(arr, (size / 2));
+  TreeNode* rightNode = BuildTreeFromArrayRec(arr + (size / 2) + 1, size / 2);
 
-  if (leftNode == NULL && rightNode == NULL) {
-    insertDataToEndOfList(&(tr->leafList), newNodeData);
-  }
-
-  parentNode = createTreeNode(newNodeData, NULL, leftNode, rightNode);
-  updateSubNodesParents(parentNode);
-
-  return parentNode;
+  return createTreeNode(newNodeData, leftNode, rightNode);
 }
 
-Tree AddLeaf(Tree tr, TreeNode* p, int branchSelect, int data) {
-  TreeNode* newNode = createTreeNode(data, p, NULL, NULL);
-  if (branchSelect == LEFT) {
-    p->left = newNode;
-  } else if (branchSelect == RIGHT) {
-    p->right = newNode;
-  } else {
-    printf("Wrong branchSelect option. Exiting...");
-    exit(1);
+int findTreeHeightRec(TreeNode* root) {
+  int leftHeight, rightHeight;
+  if (root == NULL) {
+    return -1;
   }
 
-  bool isReplaced = replaceListNodeInLeafListRec(tr.leafList.head, p->data, data);
+  leftHeight = findTreeHeightRec(root->left);
+  rightHeight = findTreeHeightRec(root->right);
 
-  if (!isReplaced) {
-    if (branchSelect == LEFT) {
-      insertDataToStartOfList(&(tr.leafList), data);
-    } else if (branchSelect == RIGHT) {
-      insertDataToEndOfList(&(tr.leafList), data);
+  return (max(leftHeight, rightHeight) + 1);
+}
+
+/**
+ * Organize all data to a single array, who contains sub-arrays that is distinguished by levels.
+ * For example:
+ * The tree: 2 23 5 1 8 43 27
+ * Will be separated as follows:
+ * [ [1] , [23, 43] , [2, 5, 8, 27] ]
+ *
+ * Runtime evaluation:
+ * - findTreeHeightRec: O(n)
+ * - Allocation & for loop: O(log(n))
+ * - buildDataByLevelsArray: O(n)
+ * - printDataByLevelsArray: Two for loops, but 'n' nodes in total, so O(n)
+ *
+ * In total:
+ * O(3n + log(n)) ~= O(n) as required.
+ */
+void printByLevels(Tree tr) {
+  int i;
+  int treeHeight = findTreeHeightRec(tr.root) + 1;
+
+  SubList* dataByLevelsArray = (SubList*)malloc(treeHeight * sizeof(SubList));
+  checkAllocation(dataByLevelsArray);
+
+  for (i = 0; i < treeHeight; i++) {
+    SubList newSubList = {.arr = NULL, .arrSize = 0};
+    dataByLevelsArray[i] = newSubList;
+  }
+
+  buildDataByLevelsArray(tr.root, dataByLevelsArray, 0);
+
+  printDataByLevelsArray(dataByLevelsArray, treeHeight);
+
+  freeDataByLevelsArray(dataByLevelsArray, treeHeight);
+}
+
+void printDataByLevelsArray(SubList* dataByLevelsArray, int size) {
+  int i, j;
+  SubList currentSubList;
+
+  for (i = 0; i < size; i++) {
+    currentSubList = dataByLevelsArray[i];
+
+    // Print sublist inner array
+    for (j = 0; j < currentSubList.arrSize; j++) {
+      printf("%d ", currentSubList.arr[j]);
+    }
+  }
+}
+
+void freeDataByLevelsArray(SubList* dataByLevelsArray, int size) {
+  int i;
+  SubList currentSubList;
+
+  for (i = 0; i < size; i++) {
+    currentSubList = dataByLevelsArray[i];
+
+    if (currentSubList.arr != NULL) {
+      free(currentSubList.arr);
     }
   }
 
-  return tr;
+  free(dataByLevelsArray);
 }
 
-TreeNode* findParent(Tree tr, int parentData, int branchSelect) {
-  return findParentRec(tr.root, parentData, branchSelect);
-}
+void increaseSubListArrSizeByOne(SubList* subList) {
+  subList->arrSize = subList->arrSize + 1;
 
-TreeNode* findParentRec(TreeNode* root, int parentData, int branchSelect) {
-  int nodeData;
-
-  if (root == NULL) {
-    return NULL;
-  }
-
-  nodeData = root->data;
-
-  if (nodeData != parentData) {
-    return findParentInSubnodes(root, parentData, branchSelect);
-  }
-
-  switch (branchSelect) {
-    case LEFT:
-      if (root->left == NULL)
-        return root;
-    case RIGHT:
-      if (root->right == NULL)
-        return root;
-    default:
-      return findParentInSubnodes(root, parentData, branchSelect);
-  }
-}
-
-TreeNode* findParentInSubnodes(TreeNode* root, int parentData, int branchSelect) {
-  TreeNode *leftNode = NULL, *rightNode = NULL;
-
-  leftNode = findParentRec(root->left, parentData, branchSelect);
-  if (leftNode != NULL) {
-    return leftNode;
+  if (subList->arr == NULL) {
+    subList->arr = (int*)malloc(subList->arrSize * sizeof(int));
   } else {
-    rightNode = findParentRec(root->right, parentData, branchSelect);
-    return rightNode;
-  };
+    subList->arr = realloc(subList->arr, subList->arrSize * sizeof(int));
+  }
+
+  return;
+}
+
+// O(n) as we have 'n' nodes, with basic operation executed on each
+// (except reallocation, but it has been said in class that it is still makes it O(n))
+void buildDataByLevelsArray(TreeNode* root, SubList* dataByLevelsArray, int currentLevel) {
+  if (root == NULL) {
+    return;
+  }
+
+  buildDataByLevelsArray(root->left, dataByLevelsArray, currentLevel + 1);
+  buildDataByLevelsArray(root->right, dataByLevelsArray, currentLevel + 1);
+
+  // Increase sublist array size and insert the data to the end of the sublist array
+  SubList currentSubList = dataByLevelsArray[currentLevel];
+  increaseSubListArrSizeByOne(&currentSubList);
+
+  currentSubList.arr[currentSubList.arrSize - 1] = root->data;
+
+  // Overwrite old sublist
+  dataByLevelsArray[currentLevel] = currentSubList;
+
+  return;
 }
