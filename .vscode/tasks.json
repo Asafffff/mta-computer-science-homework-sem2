@@ -7,9 +7,7 @@
       "args": [
         "-fdiagnostics-color=always",
         "-g",
-        "${fileDirname}/trees.c",
-        "${fileDirname}/common.c",
-        "${file}",
+        "${fileDirname}/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}"
       ],
