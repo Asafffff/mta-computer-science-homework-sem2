@@ -5,6 +5,7 @@
     "stdbool.h": "c",
     "stdio.h": "c",
     "type_traits": "c",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "lists.h": "c"
   }
 }

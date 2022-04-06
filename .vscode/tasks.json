@@ -9,6 +9,7 @@
         "-g",
         "${fileDirname}/trees.c",
         "${fileDirname}/common.c",
+        "${fileDirname}/lists.c",
         "${file}",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}"
