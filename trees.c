@@ -1,4 +1,5 @@
 #include "trees.h"
+#include "common.h"
 
 TreeNode* createTreeNode(int data, TreeNode* left, TreeNode* right) {
   TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
@@ -25,40 +26,67 @@ void freeTreeRec(TreeNode* root) {
   }
 }
 
-Tree BuildTreeFromArray(int* arr, int size) {
-  Tree tr;
+bool buildExpressionTree(char* expression, Tree* tree) {
+  tree->root = buildExpressionTreeRec(expression);
 
-  tr.root = BuildTreeFromArrayRec(arr, size);
-
-  return tr;
+  return (tree->root != NULL);
 }
 
-TreeNode* BuildTreeFromArrayRec(int* arr, int size) {
-  int newNodeData = arr[size / 2];
+TreeNode* buildExpressionTreeRec(char* expression) {
+  int operatorIndex;
+  int expressionLength = strlen(expression);
+  if (expressionLength == 0) {
+    return NULL;
+  } else if (expressionLength == 1) {
+    if (!(isValidInteger(expression[0]))) {
+      printf("The input expression is not valid\n");
+      exit(1);
+    } else {
+      int nodeData = expression[0] - '0';
 
-  if (newNodeData == -1) {
+      return createTreeNode(nodeData, NULL, NULL);
+    }
+  }
+
+  operatorIndex = findParentOperatorIndex(expression);
+  if (operatorIndex == -1) {
     return NULL;
   }
 
-  if (size == 1) {
-    return createTreeNode(newNodeData, NULL, NULL);
-  }
+  char* leftSubExpression = createSubExpressionByIndices(expression, 1, operatorIndex - 1);
+  char* rightSubExpression = createSubExpressionByIndices(expression, operatorIndex + 1, strlen(expression) - 2);
 
-  TreeNode* leftNode = BuildTreeFromArrayRec(arr, (size / 2));
-  TreeNode* rightNode = BuildTreeFromArrayRec(arr + (size / 2) + 1, size / 2);
+  TreeNode* leftNode = buildExpressionTreeRec(leftSubExpression);
+  TreeNode* rightNode = buildExpressionTreeRec(rightSubExpression);
 
-  return createTreeNode(newNodeData, leftNode, rightNode);
+  TreeNode* root = createTreeNode(expression[operatorIndex], leftNode, rightNode);
+
+  return root;
 }
 
-void printTreeInorder(Tree tr) {
-  printTreeInorderRec(tr.root);
+double calcExpression(Tree tr) {
+  return calcExpressionRec(tr.root);
 }
 
-void printTreeInorderRec(TreeNode* root) {
+double calcExpressionRec(TreeNode* root) {
   if (root == NULL)
-    return;
+    return 0;
 
-  printTreeInorderRec(root->left);
-  printf("%d ", root->data);
-  printTreeInorderRec(root->right);
+  double left = calcExpressionRec(root->left);
+  double right = calcExpressionRec(root->right);
+
+  switch (root->data) {
+    case '+':
+      return left + right;
+    case '-':
+      return left - right;
+    case '*':
+      return left * right;
+    case '/':
+      return left / right;
+    case '%':
+      return (int)left % (int)right;
+    default:
+      return root->data;
+  }
 }

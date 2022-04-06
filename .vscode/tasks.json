@@ -8,7 +8,7 @@
         "-fdiagnostics-color=always",
         "-g",
         "${fileDirname}/trees.c",
-        "${fileDirname}/trees.h",
+        "${fileDirname}/common.c",
         "${file}",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}"
