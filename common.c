@@ -13,30 +13,21 @@ void checkFile(FILE* file) {
   }
 }
 
-void sortLexicographically(char** strings, int numberOfStrings) {
-  int i, j;
-
-  quicksort(strings, numberOfStrings);
-
-  return;
-}
-
 /* Swaps position of strings in array (char**) */
-void swap(char** a, char** b) {
-  char* temp = *a;
+void swap(Employee** a, Employee** b) {
+  Employee* temp = *a;
   *a = *b;
   *b = temp;
 }
 
-/* Quick sort strings in array (char**) */
-void quicksort(char** arr, unsigned int length) {
+/* Quick sort Employee* in array (char**) */
+void quicksort(Employee** arr, unsigned int length) {
   unsigned int i, piv = 0;
   if (length <= 1)
     return;
 
-  for (i = 0; i < length; i++) {
-    // if curr str < pivot str, move curr into lower array and  lower++(pvt)
-    if (strcmp(arr[i], arr[length - 1]) < 0) // use string in last index as pivot
+  for (i = 0; i < length - 1; i++) {
+    if (arr[i]->salary > arr[i + 1]->salary)
       swap(arr + i, arr + piv++);
   }
   // move pivot to "middle"

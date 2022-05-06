@@ -1,69 +1,93 @@
 #include "file.h"
 
 /**
- * @brief Reads a binary file and extracts the lowercase characters.
+ * @brief Extracts employees from file.
  *
- * @param fileName The name of the file to read.
- * @param numberOfStrings The number of strings to extract.
- * @return char** The extracted strings.
+ * @param fileName Name of file to extract from.
+ * @param numberOfEmployees (Output Param) Pointer to number of employees in file.
+ * @return Employee** Array of employees.
  */
-char** readBinaryFileLowerChars(char* fileName, int numberOfStrings) {
-  int currentStringSize = 0;
-
+Employee** extractEmployeesFromFile(char* fileName, int* numberOfEmployees) {
   FILE* binaryFile = fopen(fileName, "rb");
   checkFile(binaryFile);
-  char** extractedStrings = (char**)malloc(sizeof(char*) * numberOfStrings);
-  char* currentWord;
+  int employeesArrLogSize = 0;
+  int employeesArrPhySize = 1;
+  Employee** extractedEmployees = (Employee**)malloc(sizeof(Employee*) * employeesArrPhySize);
 
-  for (int i = 0; i < numberOfStrings; i++) {
-    fread(&currentStringSize, sizeof(int), 1, binaryFile);
-    int currentWordWriteIndex = 0;
-    currentWord = (char*)malloc(sizeof(char) * currentStringSize + 1); // +1 for null terminator
-    checkAllocation(currentWord);
+  while (true) {
+    Employee* employee = (Employee*)malloc(sizeof(Employee));
+    fread(&employee->name_length, sizeof(int), 1, binaryFile);
 
-    for (int j = 0; j < currentStringSize; j++) {
-      char currentChar = fgetc(binaryFile);
-
-      if (currentChar >= 'a' && currentChar <= 'z') {
-        currentWord[currentWordWriteIndex] = currentChar;
-        currentWordWriteIndex++;
-      }
+    if (employee->name_length == 0) {
+      free(employee);
+      break;
     }
-    currentWord[currentWordWriteIndex] = '\0';
 
-    currentWord = (char*)realloc(currentWord, strlen(currentWord) * sizeof(char) + 1); // +1 for null terminator
-    checkAllocation(currentWord);
+    employee->name = (char*)malloc(sizeof(char) * employee->name_length + 1); // +1 for null terminator
 
-    extractedStrings[i] = currentWord;
+    fread(employee->name, sizeof(char), employee->name_length, binaryFile);
+    employee->name[employee->name_length] = '\0';
+
+    fread(&employee->salary, sizeof(float), 1, binaryFile);
+
+    if (employeesArrLogSize == employeesArrPhySize) {
+      employeesArrPhySize *= 2;
+      extractedEmployees = (Employee**)realloc(extractedEmployees, sizeof(Employee*) * employeesArrPhySize);
+    }
+
+    extractedEmployees[employeesArrLogSize] = employee;
+    employeesArrLogSize++;
   }
 
   fclose(binaryFile);
 
-  return extractedStrings;
+  extractedEmployees = (Employee**)realloc(extractedEmployees, sizeof(Employee*) * employeesArrLogSize);
+  employeesArrPhySize = employeesArrLogSize;
+
+  *numberOfEmployees = employeesArrLogSize;
+  return extractedEmployees;
 }
 
 /**
- * @brief Write the strings to a text file.
+ * @brief Extracts pay raises from file.
  *
- * @param strings The strings to write.
- * @param numberOfStrings The number of strings.
- * @param fileName The name of the file to write to.
- * @return true
- * @return false
+ * @param fileName Name of file to extract from.
+ * @param numberOfEmployees Number of employees in file.
+ * @return float* Array of pay raises.
  */
-bool writeOutputToTxtFile(char** strings, int numberOfStrings, char* fileName) {
-  FILE* outputFile = fopen(fileName, "w");
+float* extractPayRaisesFromFile(char* fileName, int numberOfEmployees) {
+
+  FILE* binaryFile = fopen(fileName, "rb");
+  checkFile(binaryFile);
+  float* extractedPayRaises = (float*)malloc(sizeof(float) * numberOfEmployees);
+
+  for (int i = 0; i < numberOfEmployees; i++) {
+    fread(&extractedPayRaises[i], sizeof(float), 1, binaryFile);
+  }
+
+  fclose(binaryFile);
+
+  return extractedPayRaises;
+}
+
+/**
+ * @brief Writes employees to file.
+ *
+ * @param employees Array of employees.
+ * @param numberOfEmployees Number of employees in array.
+ * @param fileName Name of file to write to.
+ */
+void writeEmployeesToFile(Employee** employees, int numberOfEmployees, char* fileName) {
+  FILE* outputFile = fopen(fileName, "wb");
   checkFile(outputFile);
 
-  for (int i = 0; i < numberOfStrings; i++) {
-    fprintf(outputFile, "%s", strings[i]);
-
-    if (i != numberOfStrings - 1) {
-      fprintf(outputFile, "\n");
-    }
+  for (int i = 0; i < numberOfEmployees; i++) {
+    fwrite(&employees[i]->name_length, sizeof(int), 1, outputFile);
+    fwrite(employees[i]->name, sizeof(char), employees[i]->name_length, outputFile);
+    fwrite(&employees[i]->salary, sizeof(float), 1, outputFile);
   }
 
   fclose(outputFile);
 
-  return true;
+  return;
 }

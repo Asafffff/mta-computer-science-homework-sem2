@@ -2,5 +2,6 @@
 
 #include "common.h"
 
-char** readBinaryFileLowerChars(char* fileName, int numberOfStrings);
-bool writeOutputToTxtFile(char** strings, int numberOfStrings, char* fileName);
+Employee** extractEmployeesFromFile(char* fileName, int* numberOfEmployees);
+float* extractPayRaisesFromFile(char* fileName, int numberOfEmployees);
+void writeEmployeesToFile(Employee** employees, int numberOfEmployees, char* fileName);
