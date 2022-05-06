@@ -6,6 +6,7 @@
     "stdio.h": "c",
     "type_traits": "c",
     "stdlib.h": "c",
-    "lists.h": "c"
+    "lists.h": "c",
+    "typeinfo": "c"
   }
 }

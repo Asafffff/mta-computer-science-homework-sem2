@@ -4,14 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct employee {
-  int name_length;
+typedef struct student {
   char* name;
-  float salary;
-} Employee;
+  int average;
+  long fileOffset;
+} STUDENT;
 
 void checkAllocation(void* ptr);
 void checkFile(FILE* file);
-void copyArr(Employee* src[], Employee* dest[], int size);
-void merge(Employee* arr1[], int size1, Employee* arr2[], int size2, Employee* tmpArr[]);
-void mergeSort(Employee* arr[], int size);
+void copyArr(STUDENT* src[], STUDENT* dest[], int size);
+void merge(STUDENT* arr1[], int size1, STUDENT* arr2[], int size2, STUDENT* tmpArr[]);
+void mergeSort(STUDENT* arr[], int size);

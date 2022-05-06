@@ -1,95 +1,60 @@
 #include "file.h"
 
 /**
- * @brief Extracts employees from file.
+ * @brief Extracts students from a binary file.
  *
- * @param fileName Name of file to extract from.
- * @param numberOfEmployees (Output Param) Pointer to number of employees in file.
- * @return Employee** Array of employees.
+ * @param fileName The name of the file.
+ * @param numberOfStudents The number of students in the file.
+ * @return STUDENT** The extracted students.
  */
-Employee** extractEmployeesFromFile(Employee** extractedEmployees, char* fileName, int* numberOfEmployees) {
+STUDENT** extractStudentsFromFile(char* fileName, int* numberOfStudents) {
   FILE* binaryFile = fopen(fileName, "rb");
   checkFile(binaryFile);
-  int employeesArrLogSize = 0;
-  int employeesArrPhySize = 1;
+  STUDENT** extractedStudents;
 
-  while (true) {
-    Employee* employee = (Employee*)malloc(sizeof(Employee));
-    employee->name_length = 0;
-    fread(&employee->name_length, sizeof(int), 1, binaryFile);
+  fread(numberOfStudents, sizeof(short int), 1, binaryFile);
 
-    if (employee->name_length == 0) {
-      free(employee);
-      break;
-    }
+  extractedStudents = (STUDENT**)malloc(sizeof(STUDENT*) * (*numberOfStudents));
 
-    employee->name = (char*)malloc(sizeof(char) * employee->name_length + 1); // +1 for null terminator
+  for (int i = 0; i < *numberOfStudents; i++) {
+    STUDENT* student = (STUDENT*)malloc(sizeof(STUDENT));
+    student->fileOffset = ftell(binaryFile);
 
-    fread(employee->name, sizeof(char), employee->name_length, binaryFile);
-    employee->name[employee->name_length] = '\0';
+    int studentNameLength = 0;
+    fread(&studentNameLength, sizeof(short int), 1, binaryFile);
 
-    fread(&employee->salary, sizeof(float), 1, binaryFile);
+    student->name = (char*)malloc(sizeof(char) * studentNameLength + 1); // +1 for null terminator
 
-    if (employeesArrLogSize == employeesArrPhySize) {
-      employeesArrPhySize *= 2;
-      extractedEmployees = (Employee**)realloc(extractedEmployees, sizeof(Employee*) * employeesArrPhySize);
-    }
+    fread(student->name, sizeof(char), studentNameLength, binaryFile);
+    student->name[studentNameLength] = '\0';
 
-    extractedEmployees[employeesArrLogSize] = employee;
-    employeesArrLogSize++;
+    fread(&student->average, sizeof(int), 1, binaryFile);
+
+    extractedStudents[i] = student;
   }
 
   fclose(binaryFile);
 
-  if (employeesArrLogSize == 0) {
-    free(extractedEmployees);
-    extractedEmployees = NULL;
-  } else {
-    extractedEmployees = (Employee**)realloc(extractedEmployees, sizeof(Employee*) * employeesArrLogSize);
-  }
-  employeesArrPhySize = employeesArrLogSize;
-
-  *numberOfEmployees = employeesArrLogSize;
-  return extractedEmployees;
+  return extractedStudents;
 }
 
 /**
- * @brief Extracts pay raises from file.
+ * @brief Writes the offsets of the students in the file.
  *
- * @param fileName Name of file to extract from.
- * @param numberOfEmployees Number of employees in file.
- * @return float* Array of pay raises.
+ * @param students The students to write.
+ * @param numberOfStudents The number of students.
+ * @param fileName The name of the file.
  */
-float* extractPayRaisesFromFile(char* fileName, int numberOfEmployees) {
-
-  FILE* binaryFile = fopen(fileName, "rb");
-  checkFile(binaryFile);
-  float* extractedPayRaises = (float*)malloc(sizeof(float) * numberOfEmployees);
-
-  for (int i = 0; i < numberOfEmployees; i++) {
-    fread(&extractedPayRaises[i], sizeof(float), 1, binaryFile);
-  }
-
-  fclose(binaryFile);
-
-  return extractedPayRaises;
-}
-
-/**
- * @brief Writes employees to file.
- *
- * @param employees Array of employees.
- * @param numberOfEmployees Number of employees in array.
- * @param fileName Name of file to write to.
- */
-void writeEmployeesToFile(Employee** employees, int numberOfEmployees, char* fileName) {
+void writeStudentsOffsetsToFile(STUDENT** students, int numberOfStudents, char* fileName) {
   FILE* outputFile = fopen(fileName, "wb");
   checkFile(outputFile);
 
-  for (int i = 0; i < numberOfEmployees; i++) {
-    fwrite(&employees[i]->name_length, sizeof(int), 1, outputFile);
-    fwrite(employees[i]->name, sizeof(char), employees[i]->name_length, outputFile);
-    fwrite(&employees[i]->salary, sizeof(float), 1, outputFile);
+  for (int i = 0; i < numberOfStudents; i++) {
+    fprintf(outputFile, "%ld", students[i]->fileOffset);
+
+    if (i != numberOfStudents - 1) {
+      fprintf(outputFile, "\n");
+    }
   }
 
   fclose(outputFile);

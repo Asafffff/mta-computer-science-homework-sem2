@@ -2,21 +2,25 @@
 #include "common.h"
 #include "file.h"
 
-void main(int argc, char* argv[]) {
-  char** records;
-  int resSize;
+void main(int argc, char** argv) {
+  if (argc != 2) {
+    printf("Invalid number of arguments.\nExiting...");
+    exit(1);
+  }
 
-  records = findAverageGrade(argv[1], 85, &resSize);
-  printNames(records, resSize);
-  // free records!
-}
+  char* studentsBinaryFileName = argv[1];
 
-void printNames(char** records, int size) {
+  int numberOfStudents = 0;
+  STUDENT** extractedStudents = extractStudentsFromFile(studentsBinaryFileName, &numberOfStudents);
 
-  int i;
+  mergeSort(extractedStudents, numberOfStudents);
+  writeStudentsOffsetsToFile(extractedStudents, numberOfStudents, strcat(studentsBinaryFileName, ".ind"));
 
-  printf("The students names are:\n");
+  for (int i = 0; i < numberOfStudents; i++) {
+    free(extractedStudents[i]->name);
+    free(extractedStudents[i]);
+  }
+  free(extractedStudents);
 
-  for (i = 0; i < size; i++)
-    printf("%s\n", records[i]);
+  return;
 }

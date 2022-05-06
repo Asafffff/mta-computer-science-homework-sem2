@@ -2,6 +2,5 @@
 
 #include "common.h"
 
-Employee** extractEmployeesFromFile(Employee** extractedEmployees, char* fileName, int* numberOfEmployees);
-float* extractPayRaisesFromFile(char* fileName, int numberOfEmployees);
-void writeEmployeesToFile(Employee** employees, int numberOfEmployees, char* fileName);
+STUDENT** extractStudentsFromFile(char* fileName, int* numberOfStudents);
+void writeStudentsOffsetsToFile(STUDENT** students, int numberOfStudents, char* fileName);

@@ -13,7 +13,7 @@ void checkFile(FILE* file) {
   }
 }
 
-void copyArr(Employee* src[], Employee* dest[], int size) {
+void copyArr(STUDENT* src[], STUDENT* dest[], int size) {
   int i;
 
   for (i = 0; i < size; i++) {
@@ -23,12 +23,12 @@ void copyArr(Employee* src[], Employee* dest[], int size) {
   return;
 }
 
-void merge(Employee* arr1[], int size1, Employee* arr2[], int size2, Employee* tmpArr[]) {
+void merge(STUDENT* arr1[], int size1, STUDENT* arr2[], int size2, STUDENT* tmpArr[]) {
   int index1, index2, writeIndex;
   index1 = index2 = writeIndex = 0;
 
   while (index1 < size1 && index2 < size2) {
-    if (arr1[index1]->salary >= arr2[index2]->salary) {
+    if (arr1[index1]->average <= arr2[index2]->average) {
       tmpArr[writeIndex] = arr1[index1];
       index1++;
     } else {
@@ -51,9 +51,9 @@ void merge(Employee* arr1[], int size1, Employee* arr2[], int size2, Employee* t
   }
 }
 
-void mergeSort(Employee** arr, int size) {
+void mergeSort(STUDENT** arr, int size) {
   int halfSize = size / 2;
-  Employee** tmpArr;
+  STUDENT** tmpArr;
 
   if (size < 2) {
     return;
@@ -62,7 +62,7 @@ void mergeSort(Employee** arr, int size) {
   mergeSort(arr, halfSize);
   mergeSort(arr + halfSize, size - halfSize);
 
-  tmpArr = (Employee**)malloc(size * sizeof(Employee*));
+  tmpArr = (STUDENT**)malloc(size * sizeof(STUDENT*));
   checkAllocation(tmpArr);
 
   merge(arr, halfSize, arr + halfSize, size - halfSize, tmpArr);

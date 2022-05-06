@@ -11,8 +11,7 @@
       "request": "launch",
       "program": "${fileDirname}/main",
       "args": [
-        "Exe5Q2-1.bin",
-        "Exe5Q2-2.bin"
+        "Exe5Q3.bin",
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
