@@ -22,14 +22,14 @@ void sortLexicographically(char** strings, int numberOfStrings) {
 }
 
 /* Swaps position of strings in array (char**) */
-void swap(const char** a, const char** b) {
-  const char* temp = *a;
+void swap(char** a, char** b) {
+  char* temp = *a;
   *a = *b;
   *b = temp;
 }
 
 /* Quick sort strings in array (char**) */
-void quicksort(char const* arr[], unsigned int length) {
+void quicksort(char** arr, unsigned int length) {
   unsigned int i, piv = 0;
   if (length <= 1)
     return;

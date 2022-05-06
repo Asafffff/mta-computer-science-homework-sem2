@@ -37,6 +37,8 @@ char** readBinaryFileLowerChars(char* fileName, int numberOfStrings) {
     extractedStrings[i] = currentWord;
   }
 
+  fclose(binaryFile);
+
   return extractedStrings;
 }
 
@@ -60,6 +62,8 @@ bool writeOutputToTxtFile(char** strings, int numberOfStrings, char* fileName) {
       fprintf(outputFile, "\n");
     }
   }
+
+  fclose(outputFile);
 
   return true;
 }
