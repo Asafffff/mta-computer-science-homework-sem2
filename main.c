@@ -1,19 +1,29 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "common.h"
-#include "trees.h"
+#include "file.h"
 
-void main() {
-  int size, i;
-  int arr[SIZE];
-  Tree tr;
+void main(int argc, char** argv) {
+  if (argc != 3) {
+    printf("Invalid number of arguments.\nExiting...");
+    exit(1);
+  }
 
-  printf("Please enter the number of items: ");
-  scanf("%d", &size);
+  char* binaryFileName = argv[1];
+  int numberOfStrings = atoi(argv[2]);
 
-  for (i = 0; i < size; i++)
-    scanf("%d", &arr[i]);
+  char** extractedStrings = readBinaryFileLowerChars(binaryFileName, numberOfStrings);
+  sortLexicographically(extractedStrings, numberOfStrings);
 
-  tr = BuildTreeFromArray(arr, size); // the function from question 1
-  printByLevels(tr);
-  freeTree(tr);
+  strcat(binaryFileName, ".txt");
+  writeOutputToTxtFile(extractedStrings, numberOfStrings, binaryFileName);
+
+  for (int i = 0; i < numberOfStrings; i++) {
+    free(extractedStrings[i]);
+    extractedStrings[i] = NULL;
+  }
+  free(extractedStrings);
+
+  extractedStrings = NULL;
+
+  return;
 }

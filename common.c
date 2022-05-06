@@ -6,54 +6,43 @@ void checkAllocation(void* ptr) {
   }
 }
 
-char* createSubExpressionByIndices(char* expression, int startIndex, int endIndex) {
-  char* subExpression = (char*)malloc(sizeof(char) * (endIndex - startIndex + 1));
-  checkAllocation(subExpression);
-
-  int i;
-  for (i = startIndex; i <= endIndex; i++) {
-    subExpression[i - startIndex] = expression[i];
+void checkFile(FILE* file) {
+  if (file == NULL) {
+    printf("Could not open file.\nExiting...");
+    exit(1);
   }
-
-  subExpression[i - startIndex] = '\0';
-
-  return subExpression;
 }
 
-bool isValidInteger(char ch) {
-  return (ch >= '0' && ch <= '9');
+void sortLexicographically(char** strings, int numberOfStrings) {
+  int i, j;
+
+  quicksort(strings, numberOfStrings);
+
+  return;
 }
 
-bool isValidOperator(char ch) {
-  return (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '%');
+/* Swaps position of strings in array (char**) */
+void swap(const char** a, const char** b) {
+  const char* temp = *a;
+  *a = *b;
+  *b = temp;
 }
 
-int findParentOperatorIndex(char* expression) {
-  int index = 0;
-  int lenStr = strlen(expression);
-  bool skipOperator = false;
-  char currentChar;
-  int parenthesisCount = 0;
+/* Quick sort strings in array (char**) */
+void quicksort(char const* arr[], unsigned int length) {
+  unsigned int i, piv = 0;
+  if (length <= 1)
+    return;
 
-  while (index < lenStr) {
-    currentChar = expression[index];
-
-    if (currentChar == '(') {
-      parenthesisCount++;
-      if (parenthesisCount > 1) {
-        skipOperator = true;
-      }
-    } else if (currentChar == ')') {
-      parenthesisCount--;
-      if (parenthesisCount == 1) {
-        skipOperator = false;
-      }
-    } else if (!skipOperator && parenthesisCount == 1 && isValidOperator(currentChar)) {
-      return index;
-    }
-
-    index++;
+  for (i = 0; i < length; i++) {
+    // if curr str < pivot str, move curr into lower array and  lower++(pvt)
+    if (strcmp(arr[i], arr[length - 1]) < 0) // use string in last index as pivot
+      swap(arr + i, arr + piv++);
   }
+  // move pivot to "middle"
+  swap(arr + piv, arr + length - 1);
 
-  return -1;
+  // recursively sort upper and lower
+  quicksort(arr, piv++); // set length to current pvt and increase for next call
+  quicksort(arr + piv, length - piv);
 }

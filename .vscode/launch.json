@@ -9,9 +9,10 @@
       "type": "cppdbg",
       "preLaunchTask": "C/C++: gcc-9 build active file",
       "request": "launch",
-      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "program": "${fileDirname}/main",
       "args": [
-        "-g"
+        "Exe5Q1.bin",
+        "3"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
