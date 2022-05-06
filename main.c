@@ -2,36 +2,21 @@
 #include "common.h"
 #include "file.h"
 
-void main(int argc, char** argv) {
-  if (argc != 3) {
-    printf("Invalid number of arguments.\nExiting...");
-    exit(1);
-  }
+void main(int argc, char* argv[]) {
+  char** records;
+  int resSize;
 
-  char* employeeFileName = argv[1];
-  char* payRaiseFileName = argv[2];
+  records = findAverageGrade(argv[1], 85, &resSize);
+  printNames(records, resSize);
+  // free records!
+}
 
-  int numberOfEmployees;
-  int employeesArrLogSize = 0;
-  int employeesArrPhySize = 1;
-  Employee** extractedEmployees = (Employee**)malloc(sizeof(Employee*) * employeesArrPhySize);
-  extractedEmployees = extractEmployeesFromFile(extractedEmployees, employeeFileName, &numberOfEmployees);
-  float* extractedPayRaises = extractPayRaisesFromFile(payRaiseFileName, numberOfEmployees);
+void printNames(char** records, int size) {
 
-  // Add pay raises to employees
-  for (int i = 0; i < numberOfEmployees; i++) {
-    extractedEmployees[i]->salary += extractedPayRaises[i];
-  }
+  int i;
 
-  mergeSort(extractedEmployees, numberOfEmployees);
-  writeEmployeesToFile(extractedEmployees, numberOfEmployees, employeeFileName);
+  printf("The students names are:\n");
 
-  for (int i = 0; i < numberOfEmployees; i++) {
-    free(extractedEmployees[i]->name);
-    free(extractedEmployees[i]);
-  }
-  free(extractedEmployees);
-  free(extractedPayRaises);
-
-  return;
+  for (i = 0; i < size; i++)
+    printf("%s\n", records[i]);
 }
