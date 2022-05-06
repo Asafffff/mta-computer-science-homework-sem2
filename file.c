@@ -39,25 +39,53 @@ STUDENT** extractStudentsFromFile(char* fileName, int* numberOfStudents) {
 }
 
 /**
- * @brief Writes the offsets of the students in the file.
+ * @brief Returns an array of names of students, with average grade greater than or equal to the given minimum average.
  *
- * @param students The students to write.
- * @param numberOfStudents The number of students.
- * @param fileName The name of the file.
+ * @param fileName The name of the file that contains the students.
+ * @param minAverage The minimum average.
+ * @param resSize The number of students with average grade greater than or equal to the given minimum average.
+ * @return char** The array of names of students with average grade greater than or equal to the given minimum average.
  */
-void writeStudentsOffsetsToFile(STUDENT** students, int numberOfStudents, char* fileName) {
-  FILE* outputFile = fopen(fileName, "wb");
-  checkFile(outputFile);
+char** findAverageGrade(char* fileName, int minAverage, int* resSize) {
+  int extractedStudentsCount = 0;
+  int studentsAboveAverageCount = 0;
+  STUDENT** extractedStudents = extractStudentsFromFile(fileName, &extractedStudentsCount);
 
-  for (int i = 0; i < numberOfStudents; i++) {
-    fprintf(outputFile, "%ld", students[i]->fileOffset);
+  char** studentsAboveAverage = (char**)malloc(sizeof(char*) * extractedStudentsCount);
 
-    if (i != numberOfStudents - 1) {
-      fprintf(outputFile, "\n");
+  for (int i = 0; i < extractedStudentsCount; i++) {
+    if (extractedStudents[i]->average >= minAverage) {
+      studentsAboveAverage[studentsAboveAverageCount] = strdup(extractedStudents[i]->name);
+
+      studentsAboveAverageCount++;
     }
   }
 
-  fclose(outputFile);
+  if (studentsAboveAverageCount == 0) {
+    freeArrayOfStudents(extractedStudents, extractedStudentsCount);
+    free(studentsAboveAverage);
 
-  return;
+    *resSize = 0;
+    return NULL;
+  }
+
+  *resSize = studentsAboveAverageCount;
+  studentsAboveAverage = (char**)realloc(studentsAboveAverage, sizeof(char*) * studentsAboveAverageCount);
+  freeArrayOfStudents(extractedStudents, extractedStudentsCount);
+
+  return studentsAboveAverage;
+}
+
+/**
+ * @brief Free the memory allocated for an array of students.
+ *
+ * @param extractedStudents The array of students.
+ * @param extractedStudentsCount The number of students in the array.
+ */
+void freeArrayOfStudents(STUDENT** extractedStudents, int extractedStudentsCount) {
+  for (int i = 0; i < extractedStudentsCount; i++) {
+    free(extractedStudents[i]->name);
+    free(extractedStudents[i]);
+  }
+  free(extractedStudents);
 }

@@ -12,6 +12,3 @@ typedef struct student {
 
 void checkAllocation(void* ptr);
 void checkFile(FILE* file);
-void copyArr(STUDENT* src[], STUDENT* dest[], int size);
-void merge(STUDENT* arr1[], int size1, STUDENT* arr2[], int size2, STUDENT* tmpArr[]);
-void mergeSort(STUDENT* arr[], int size);
