@@ -12,5 +12,6 @@ typedef struct employee {
 
 void checkAllocation(void* ptr);
 void checkFile(FILE* file);
-void swap(Employee** a, Employee** b);
-void quicksort(Employee** arr, unsigned int length);
+void copyArr(Employee* src[], Employee* dest[], int size);
+void merge(Employee* arr1[], int size1, Employee* arr2[], int size2, Employee* tmpArr[]);
+void mergeSort(Employee* arr[], int size);

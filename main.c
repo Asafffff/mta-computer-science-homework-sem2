@@ -23,7 +23,7 @@ void main(int argc, char** argv) {
     extractedEmployees[i]->salary += extractedPayRaises[i];
   }
 
-  quicksort(extractedEmployees, numberOfEmployees);
+  mergeSort(extractedEmployees, numberOfEmployees);
   writeEmployeesToFile(extractedEmployees, numberOfEmployees, employeeFileName);
 
   for (int i = 0; i < numberOfEmployees; i++) {
