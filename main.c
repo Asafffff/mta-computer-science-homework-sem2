@@ -12,7 +12,10 @@ void main(int argc, char** argv) {
   char* payRaiseFileName = argv[2];
 
   int numberOfEmployees;
-  Employee** extractedEmployees = extractEmployeesFromFile(employeeFileName, &numberOfEmployees);
+  int employeesArrLogSize = 0;
+  int employeesArrPhySize = 1;
+  Employee** extractedEmployees = (Employee**)malloc(sizeof(Employee*) * employeesArrPhySize);
+  extractedEmployees = extractEmployeesFromFile(extractedEmployees, employeeFileName, &numberOfEmployees);
   float* extractedPayRaises = extractPayRaisesFromFile(payRaiseFileName, numberOfEmployees);
 
   // Add pay raises to employees
@@ -22,6 +25,13 @@ void main(int argc, char** argv) {
 
   quicksort(extractedEmployees, numberOfEmployees);
   writeEmployeesToFile(extractedEmployees, numberOfEmployees, employeeFileName);
+
+  for (int i = 0; i < numberOfEmployees; i++) {
+    free(extractedEmployees[i]->name);
+    free(extractedEmployees[i]);
+  }
+  free(extractedEmployees);
+  free(extractedPayRaises);
 
   return;
 }

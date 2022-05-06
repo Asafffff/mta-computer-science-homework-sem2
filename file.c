@@ -7,15 +7,15 @@
  * @param numberOfEmployees (Output Param) Pointer to number of employees in file.
  * @return Employee** Array of employees.
  */
-Employee** extractEmployeesFromFile(char* fileName, int* numberOfEmployees) {
+Employee** extractEmployeesFromFile(Employee** extractedEmployees, char* fileName, int* numberOfEmployees) {
   FILE* binaryFile = fopen(fileName, "rb");
   checkFile(binaryFile);
   int employeesArrLogSize = 0;
   int employeesArrPhySize = 1;
-  Employee** extractedEmployees = (Employee**)malloc(sizeof(Employee*) * employeesArrPhySize);
 
   while (true) {
     Employee* employee = (Employee*)malloc(sizeof(Employee));
+    employee->name_length = 0;
     fread(&employee->name_length, sizeof(int), 1, binaryFile);
 
     if (employee->name_length == 0) {
@@ -41,7 +41,12 @@ Employee** extractEmployeesFromFile(char* fileName, int* numberOfEmployees) {
 
   fclose(binaryFile);
 
-  extractedEmployees = (Employee**)realloc(extractedEmployees, sizeof(Employee*) * employeesArrLogSize);
+  if (employeesArrLogSize == 0) {
+    free(extractedEmployees);
+    extractedEmployees = NULL;
+  } else {
+    extractedEmployees = (Employee**)realloc(extractedEmployees, sizeof(Employee*) * employeesArrLogSize);
+  }
   employeesArrPhySize = employeesArrLogSize;
 
   *numberOfEmployees = employeesArrLogSize;
