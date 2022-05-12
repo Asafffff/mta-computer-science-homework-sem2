@@ -54,7 +54,7 @@ char** findAverageGrade(char* fileName, int minAverage, int* resSize) {
   char** studentsAboveAverage = (char**)malloc(sizeof(char*) * extractedStudentsCount);
 
   for (int i = 0; i < extractedStudentsCount; i++) {
-    if (extractedStudents[i]->average >= minAverage) {
+    if (extractedStudents[i]->average == minAverage) {
       studentsAboveAverage[studentsAboveAverageCount] = strdup(extractedStudents[i]->name);
 
       studentsAboveAverageCount++;

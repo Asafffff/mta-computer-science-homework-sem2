@@ -8,7 +8,7 @@ void main(int argc, char* argv[]) {
   char** records;
   int resSize;
 
-  records = findAverageGrade(argv[1], 100, &resSize);
+  records = findAverageGrade(argv[1], 85, &resSize);
   printNames(records, resSize);
 
   for (int i = 0; i < resSize; i++) {
