@@ -126,37 +126,6 @@ char** findAverageGrade(char* fileName, int minAverage, int* resSize) {
   foundStudentsNames[foundStudentsLogSize] = strdup(studentName);
   foundStudentsLogSize++;
 
-  // Add students with same grade from left of the required index, if exists
-  while (true & offsetArrRequiredIndexRunner > 0) {
-    fseek(studentsFile, offsetsArr[offsetArrRequiredIndexRunner - 1], SEEK_SET);
-    fread(&studentNameLength, sizeof(short int), 1, studentsFile);
-    fseek(studentsFile, studentNameLength, SEEK_CUR);
-    fread(&studentAverage, sizeof(int), 1, studentsFile);
-
-    if (studentAverage == minAverage) {
-      foundStudentsNames =
-          increaseArraySizeIfFull(foundStudentsNames, &foundStudentsLogSize, &foundStudentsPhySize, sizeof(char*));
-
-      fseek(studentsFile, offsetsArr[offsetArrRequiredIndexRunner - 1], SEEK_SET);
-      fread(&studentNameLength, sizeof(short int), 1, studentsFile);
-
-      studentName = (char*)realloc(studentName, sizeof(char) * (studentNameLength + 1));
-      checkAllocation(studentName);
-
-      fread(studentName, sizeof(char), studentNameLength, studentsFile);
-      studentName[studentNameLength] = '\0';
-
-      foundStudentsNames[foundStudentsLogSize] = strdup(studentName);
-      foundStudentsLogSize++;
-    } else {
-      break;
-    }
-    offsetArrRequiredIndexRunner--;
-  }
-
-  // Reset index back to the middle of the array
-  offsetArrRequiredIndexRunner = offsetArrRequiredIndex;
-
   // Add students with same grade from right of the required index, if exists
   while (true & offsetArrRequiredIndexRunner < offsetsArrSize) {
     fseek(studentsFile, offsetsArr[offsetArrRequiredIndexRunner + 1], SEEK_SET);

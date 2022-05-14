@@ -44,7 +44,8 @@ int gradesBinarySearchByOffsets(FILE* studentsFile, int arr[], int leftInd, int 
     fread(&currentStudentAverage, sizeof(int), 1, studentsFile);
 
     if (currentStudentAverage == wantedGrade) {
-      return mid;
+      int indexOfEarlierOccourence = gradesBinarySearchByOffsets(studentsFile, arr, leftInd, mid - 1, wantedGrade);
+      return indexOfEarlierOccourence != NOT_FOUND ? indexOfEarlierOccourence : mid;
     }
 
     if (wantedGrade < currentStudentAverage) {
