@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NOT_FOUND -1
+
 typedef struct student {
   char* name;
   int average;
@@ -12,3 +14,5 @@ typedef struct student {
 
 void checkAllocation(void* ptr);
 void checkFile(FILE* file);
+void* increaseArraySizeIfFull(void* arr, int* logSize, int* phySize, unsigned long sizeOfType);
+int gradesBinarySearchByOffsets(FILE* studentsFile, int arr[], int leftInd, int rightInd, int wantedGrade);
