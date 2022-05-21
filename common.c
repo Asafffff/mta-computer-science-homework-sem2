@@ -30,30 +30,3 @@ void* increaseArraySizeIfFull(void* arr, int* logSize, int* phySize, unsigned lo
 
   return arr;
 }
-
-int gradesBinarySearchByOffsets(FILE* studentsFile, int arr[], int leftInd, int rightInd, int wantedGrade) {
-  int currentStudentNameLength = 0;
-  int currentStudentAverage = 0;
-
-  int mid = (leftInd + rightInd) / 2;
-
-  if (leftInd <= rightInd) {
-    fseek(studentsFile, arr[mid], SEEK_SET);
-    fread(&currentStudentNameLength, sizeof(short int), 1, studentsFile);
-    fseek(studentsFile, currentStudentNameLength, SEEK_CUR);
-    fread(&currentStudentAverage, sizeof(int), 1, studentsFile);
-
-    if (currentStudentAverage == wantedGrade) {
-      int indexOfEarlierOccourence = gradesBinarySearchByOffsets(studentsFile, arr, leftInd, mid - 1, wantedGrade);
-      return indexOfEarlierOccourence != NOT_FOUND ? indexOfEarlierOccourence : mid;
-    }
-
-    if (wantedGrade < currentStudentAverage) {
-      return gradesBinarySearchByOffsets(studentsFile, arr, leftInd, mid - 1, wantedGrade);
-    } else {
-      return gradesBinarySearchByOffsets(studentsFile, arr, mid + 1, rightInd, wantedGrade);
-    }
-  }
-
-  return NOT_FOUND;
-}
