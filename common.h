@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _COMMON_H
+#define _COMMON_H
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +9,7 @@
 #define NOT_FOUND -1
 #define SHORT_ID_LENGTH 4
 #define SHORT_PHONE_LENGTH 5
+#define PHONE_NUMBER_DASH_INDEX 3
 
 typedef unsigned char BYTE;
 
@@ -24,9 +27,14 @@ void checkAllocation(void* ptr);
 void checkFile(FILE* file);
 void* increaseArraySizeIfFull(void* arr, int* logSize, int* phySize, unsigned long sizeOfType);
 Client* getClientByInput();
+void normalizePhoneNumber(char* phoneNumber);
+void denormalizePhoneNumber(char* phoneNumber);
+BYTE* compressStringInteger(char* integerAsString, int numOfBytes);
 BYTE* compressId(char* clientId);
 BYTE* compressPhone(char* clientPhone);
-void normalizePhone(char* phoneNumber);
 Short_client* compressClients(Client clients[], int numOfClients);
 Short_client* createShortClientArr(int numOfClients);
 char* searchClientByID(Short_client* shortClients, int numOfClients, char* id);
+int getClientIndexByCompressedId(Short_client* shortClients, int numOfClients, BYTE* compressedId);
+
+#endif // _COMMON_H

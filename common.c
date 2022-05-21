@@ -44,16 +44,16 @@ Client* getClientByInput() {
   return client;
 }
 
-BYTE* compressId(char* clientId) {
+BYTE* compressStringInteger(char* integerAsString, int numOfBytes) {
   int i;
-  BYTE* compressedId = malloc(sizeof(BYTE) * SHORT_ID_LENGTH);
+  BYTE* compressedString = (BYTE*)malloc(sizeof(BYTE) * numOfBytes);
+  checkAllocation(compressedString);
+
+  int stringLength = strlen(integerAsString);
   BYTE currentByte = 0x00;
-  checkAllocation(compressedId);
 
-  int clientIdLength = strlen(clientId);
-
-  for (i = 0; i < clientIdLength; i++) {
-    char currentDigit = clientId[i] - '0';
+  for (i = 0; i < stringLength; i++) {
+    char currentDigit = integerAsString[i] - '0';
 
     // If the index is even, it should take the 4 leftmost bits
     if (i % 2 == 0) {
@@ -62,51 +62,66 @@ BYTE* compressId(char* clientId) {
       currentByte |= currentDigit;
 
       // Append to compressedId and reset state
-      compressedId[i / 2] = currentByte;
+      compressedString[i / 2] = currentByte;
       currentByte = 0x00;
     }
   }
 
-  return compressedId;
+  return compressedString;
 }
 
-void normalizePhone(char* phoneNumber) {
+void normalizePhoneNumber(char* phoneNumber) {
   int i;
   int phoneNumberLength = strlen(phoneNumber);
 
-  for (i = 3; i < phoneNumberLength; i++) {
+  for (i = PHONE_NUMBER_DASH_INDEX; i < phoneNumberLength; i++) {
     phoneNumber[i] = phoneNumber[i + 1];
   }
 
   return;
 }
 
-BYTE* compressPhone(char* clientPhoneNumber) {
+void denormalizePhoneNumber(char* phoneNumber) {
   int i;
+  int phoneNumberLength = strlen(phoneNumber);
 
-  BYTE* compressedPhone = malloc(sizeof(BYTE) * SHORT_PHONE_LENGTH);
-  BYTE currentByte = 0x00;
-  checkAllocation(compressedPhone);
-
-  normalizePhone(clientPhoneNumber);
-  int clientPhoneLength = strlen(clientPhoneNumber);
-
-  for (i = 0; i < clientPhoneLength; i++) {
-    char currentDigit = clientPhoneNumber[i] - '0';
-
-    // If the index is even, it should take the 4 leftmost bits
-    if (i % 2 == 0) {
-      currentByte |= currentDigit << 4;
-    } else {
-      currentByte |= currentDigit;
-
-      // Append to compressedId and reset state
-      compressedPhone[i / 2] = currentByte;
-      currentByte = 0x00;
-    }
+  for (i = phoneNumberLength; i > PHONE_NUMBER_DASH_INDEX; i--) {
+    phoneNumber[i] = phoneNumber[i - 1];
   }
 
+  phoneNumber[PHONE_NUMBER_DASH_INDEX] = '-';
+
+  return;
+}
+
+BYTE* compressId(char* clientId) {
+  BYTE* compressedId = compressStringInteger(clientId, SHORT_ID_LENGTH);
+
+  return compressedId;
+}
+
+BYTE* compressPhone(char* clientPhoneNumber) {
+  normalizePhoneNumber(clientPhoneNumber);
+  BYTE* compressedPhone = compressStringInteger(clientPhoneNumber, SHORT_PHONE_LENGTH);
+
   return compressedPhone;
+}
+
+char* uncompressPhone(BYTE* compressedPhoneNumber) {
+  int i;
+  char* phoneNumber = (char*)calloc(SHORT_PHONE_LENGTH * 2 + 1 + 1,
+                                    sizeof(char)); // +1 for the upcoming '-' char, +1 for the null terminator
+  checkAllocation(phoneNumber);
+
+  BYTE firstNumMask = 0xF0;
+  BYTE secondNumMask = 0x0F;
+
+  for (i = 0; i < SHORT_PHONE_LENGTH; i++) {
+    phoneNumber[2 * i] = ((compressedPhoneNumber[i] & firstNumMask) >> 4) + '0';
+    phoneNumber[2 * i + 1] = ((compressedPhoneNumber[i] & secondNumMask)) + '0';
+  }
+
+  return phoneNumber;
 }
 
 Short_client* compressClients(Client* clients, int numOfClients) {
@@ -142,4 +157,45 @@ Short_client* createShortClientArr(int numOfClients) {
   return shortClients;
 }
 
-char* searchClientByID(Short_client* shortClients, int numOfClients, char* id) {}
+int getClientIndexByCompressedId(Short_client* shortClients, int numOfClients, BYTE* compressedId) {
+  int i, j;
+
+  int clientIndex = NOT_FOUND;
+
+  for (i = 0; i < numOfClients; i++) {
+    Short_client currentClient = shortClients[i];
+
+    for (j = 0; j < SHORT_ID_LENGTH; j++) {
+      BYTE clientShortIdByte = currentClient.short_id[j];
+      BYTE searchShortIdByte = compressedId[j];
+      if (currentClient.short_id[j] != compressedId[j]) {
+        break;
+      }
+
+      if (j == SHORT_ID_LENGTH - 1) {
+        clientIndex = i;
+      }
+    }
+
+    if (clientIndex != NOT_FOUND) {
+      break;
+    }
+  }
+
+  return clientIndex;
+}
+
+char* searchClientByID(Short_client* shortClients, int numOfClients, char* id) {
+  BYTE* compressedId = compressId(id);
+
+  int clientIndex = getClientIndexByCompressedId(shortClients, numOfClients, compressedId);
+
+  if (clientIndex == NOT_FOUND) {
+    return NULL;
+  }
+
+  char* uncompressedPhoneNumber = uncompressPhone(shortClients[clientIndex].short_phone);
+  denormalizePhoneNumber(uncompressedPhoneNumber);
+
+  return uncompressedPhoneNumber;
+}

@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "common.h"
-#include "file.h"
 
 void main() {
   int n;
@@ -12,6 +11,7 @@ void main() {
   scanf("%d", &n);
 
   arr = createShortClientArr(n);
+  getc(stdin);
   gets(id);
   phone = searchClientByID(arr, n, id);
   if (phone == NULL) {
