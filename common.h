@@ -14,8 +14,5 @@ typedef unsigned char BYTE;
 void checkAllocation(void* ptr);
 void checkFile(FILE* file);
 void* increaseArraySizeIfFull(void* arr, int* logSize, int* phySize, unsigned long sizeOfType);
-bool isBitOnByIndex(BYTE byte, unsigned int index);
-int* filter(int* Numbers, int size, unsigned char* pred, int* new_size);
-int* xorFilter(int* Numbers, int size, unsigned char* pred1, unsigned char* pred2, int* new_size);
 
 #endif // _COMMON_H

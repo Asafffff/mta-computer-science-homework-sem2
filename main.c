@@ -1,65 +1,38 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "common.h"
 
+#define SIZE 100
+
 void main() {
-  int i, pr, new_size, size;
-  int* numbers;
-  unsigned char *pred1, *pred2;
-  int* some_numbers1;
-  int* some_numbers2;
+  int *intArr, *scrambleIntArr;
+  int intSize;
+  char **stringArr, **scrambleStringArr;
+  int stringSize, i;
+  int indArr[SIZE];
 
-  printf("Please enter the number of numbers:\n");
-  scanf("%d", &size);
+  // The user will enter the number of integers followed by the integers.
+  intArr = getIntArr(&intSize);
 
-  numbers = (int*)malloc(size * sizeof(int));
+  // The user will enter the indices
+  for (i = 0; i < intSize; i++)
+    scanf("%d", &indArr[i]);
 
-  if (numbers == NULL)
-    exit(1);
+  // The function scrambles the array using scramble()
+  scrambleIntArr = scrambleInt(intArr, intSize, indArr);
+  printIntArr(scrambleIntArr, intSize);
 
-  pred1 = (char*)malloc(size / 8 * sizeof(char));
+  // The user will enter the number of strings (lines) followed by the strings.
+  // You may assume that each line contains up to 99 characters.
+  stringArr = getStringArr(&stringSize);
 
-  if (pred1 == NULL)
-    exit(1);
+  // The user will enter the indices
+  for (i = 0; i < stringSize; i++)
+    scanf("%d", &indArr[i]);
 
-  pred2 = (char*)malloc(size / 8 * sizeof(char));
+  // The function scrambles the array using scramble()
+  scrambleStringArr = scrambleString(stringArr, stringSize, indArr);
 
-  if (pred2 == NULL)
-    exit(1);
+  printStringArr(scrambleStringArr, stringSize);
 
-  printf("Please enter the numbers:\n");
-
-  for (i = 0; i < size; i++)
-    scanf("%d", &numbers[i]);
-
-  printf("Please enter the first filter bits in hexa:\n");
-
-  for (i = 0; i < size / 8; i++) {
-    scanf("%x", &pr);
-    pred1[i] = (char)pr;
-  }
-
-  some_numbers1 = filter(numbers, size, pred1, &new_size);
-  printf("The numbers selected are:\n");
-
-  for (i = 0; i < new_size; i++)
-    printf("%d ", some_numbers1[i]);
-
-  printf("Please enter the second filter bits in hexa:\n");
-
-  for (i = 0; i < size / 8; i++) {
-    scanf("%x", &pr);
-    pred2[i] = (char)pr;
-  }
-
-  some_numbers2 = xorFilter(numbers, size, pred1, pred2, &new_size);
-  printf("The numbers selected are:\n");
-
-  for (i = 0; i < new_size; i++)
-    printf("%d ", some_numbers2[i]);
-
-  free(numbers);
-  free(some_numbers1);
-  free(pred1);
-  free(some_numbers2);
-  free(pred2);
+  freeMemory(intArr, scrambleIntArr, intSize, stringArr, scrambleStringArr, stringSize);
 }
