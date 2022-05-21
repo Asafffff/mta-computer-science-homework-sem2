@@ -5,6 +5,10 @@
 #include <string.h>
 
 #define NOT_FOUND -1
+#define SHORT_ID_LENGTH 4
+#define SHORT_PHONE_LENGTH 5
+
+typedef unsigned char BYTE;
 
 typedef struct _client {
   char id[9];     // “12345678”
@@ -19,3 +23,10 @@ typedef struct _short_client {
 void checkAllocation(void* ptr);
 void checkFile(FILE* file);
 void* increaseArraySizeIfFull(void* arr, int* logSize, int* phySize, unsigned long sizeOfType);
+Client* getClientByInput();
+BYTE* compressId(char* clientId);
+BYTE* compressPhone(char* clientPhone);
+void normalizePhone(char* phoneNumber);
+Short_client* compressClients(Client clients[], int numOfClients);
+Short_client* createShortClientArr(int numOfClients);
+char* searchClientByID(Short_client* shortClients, int numOfClients, char* id);

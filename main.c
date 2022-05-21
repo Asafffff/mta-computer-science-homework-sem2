@@ -2,27 +2,24 @@
 #include "common.h"
 #include "file.h"
 
-void printNames(char** records, int size);
+void main() {
+  int n;
+  Short_client* arr;
+  char id[9];
+  char* phone;
 
-void main(int argc, char* argv[]) {
-  char** records;
-  int resSize;
+  printf("Please enter the number of clients: ");
+  scanf("%d", &n);
 
-  records = findAverageGrade(argv[1], 85, &resSize);
-  printNames(records, resSize);
-
-  for (int i = 0; i < resSize; i++) {
-    free(records[i]);
+  arr = createShortClientArr(n);
+  gets(id);
+  phone = searchClientByID(arr, n, id);
+  if (phone == NULL) {
+    printf("Can not find client with i.d. %s\n", id);
+  } else {
+    printf("The phone number of client i.d. %s is %s\n", id, phone);
+    free(phone);
   }
-  free(records);
-}
 
-void printNames(char** records, int size) {
-
-  int i;
-
-  printf("The students names are:\n");
-
-  for (i = 0; i < size; i++)
-    printf("%s\n", records[i]);
+  free(arr);
 }
