@@ -110,13 +110,65 @@ void printStringArr(char** stringArr, int stringArrSize) {
   }
 }
 
-void freeMemory(int* intArr, int* scrambleIntArr, int intSize, char** stringArr, char** scrambleStringArr,
-                int stringSize) {
+void freeMemory(int* intArr, int intSize, char** stringArr, int stringSize) {
   free(intArr);
-  free(scrambleIntArr);
   for (int i = 0; i < stringSize; i++) {
     free(stringArr[i]);
   }
   free(stringArr);
-  free(scrambleStringArr);
+}
+
+int binSearch(void* Arr, int Size, int ElemSize, void* Item, int (*compare)(void*, void*)) {
+  int left = 0;
+  int right = Size - 1;
+  int mid;
+
+  while (left <= right) {
+    mid = (left + right) / 2;
+    void* midItem = (BYTE*)Arr + mid * ElemSize;
+
+    if (compare(midItem, Item) == 0) {
+      return FOUND;
+    } else if (compare(midItem, Item) < 0) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return NOT_FOUND;
+}
+
+int intCompare(void* a, void* b) {
+  int aInt = *(int*)a;
+  int bInt = *(int*)b;
+
+  if (aInt == bInt) {
+    return EQ;
+  } else if (aInt < bInt) {
+    return LT;
+  } else if (aInt > bInt) {
+    return GT;
+  }
+}
+
+int stringsCompare(void* a, void* b) {
+  char* aString = *(char**)a;
+  char* bString = *(char**)b;
+
+  if (strcmp(aString, bString) == 0) {
+    return EQ;
+  } else if (strcmp(aString, bString) < 0) {
+    return LT;
+  } else if (strcmp(aString, bString) > 0) {
+    return GT;
+  }
+}
+
+bool intBinSearch(int* intArr, int intSize, int intToFind) {
+  return binSearch(intArr, intSize, sizeof(int), &intToFind, &intCompare);
+}
+
+bool stringBinSearch(char** stringArr, int stringArrSize, char* stringToFind) {
+  return binSearch(stringArr, stringArrSize, sizeof(char*), &stringToFind, &stringsCompare);
 }
